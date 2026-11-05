@@ -31,11 +31,17 @@ function save(){
   try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){ toast('Não consegui salvar no navegador'); }
   setStatus();
   writeFile();
+  if(window.nuvem) nuvem.agendar();
 }
 function setStatus(){
   const t = state.updatedAt ? new Date(state.updatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : null;
-  document.getElementById('saveStatus').textContent =
-    (fileHandle ? 'Salvo no navegador e no arquivo' : 'Salvo neste navegador') + (t ? ' · ' + t : '');
+  const n = window.nuvem && nuvem.status();
+  const el = document.getElementById('saveStatus');
+  el.parentElement.className = 'save-status ' + (n ? n[0] : 'ok');
+  el.parentElement.title = (window.nuvem && nuvem.erro) || '';
+  el.textContent = n
+    ? n[1] + (n[0]==='ok' && t ? ' · ' + t : '')
+    : (fileHandle ? 'Salvo no navegador e no arquivo' : 'Salvo neste navegador') + (t ? ' · ' + t : '');
 }
 // Pede ao navegador para não apagar os dados em limpeza automática
 if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
