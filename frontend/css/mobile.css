@@ -1,0 +1,149 @@
+/* ========= Celular (até 720px) =========
+   Tudo aqui só vale no celular; no computador o layout continua igual. */
+
+/* Elementos que só existem no celular */
+nav.tabs .ti, nav.tabs .ts, .fab{display:none}
+
+@media (max-width:720px){
+  :root{ --tabbar-h:64px; --safe-b:env(safe-area-inset-bottom, 0px); }
+  body{font-size:15px}
+  .wrap{padding:calc(10px + env(safe-area-inset-top, 0px)) 12px calc(var(--tabbar-h) + var(--safe-b) + 84px)}
+
+  /* ---- Cabeçalho compacto: título + Dados numa linha, mês fixo no topo ---- */
+  header.top{display:grid;grid-template-columns:1fr auto;grid-template-areas:"brand menu" "month month";gap:10px;margin-bottom:12px;align-items:center}
+  .top-actions{display:contents}
+  .brand{grid-area:brand;min-width:0}
+  .brand h1{font-size:19px}
+  .brand p{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .menu{grid-area:menu}
+  #menuBtn{padding:8px 12px}
+  .menu-pop{position:fixed;left:12px;right:12px;top:auto;bottom:calc(var(--tabbar-h) + var(--safe-b) + 8px);max-height:70vh;overflow:auto;min-width:0;border-radius:16px;padding:8px;box-shadow:0 -10px 40px rgba(0,0,0,.35);z-index:70}
+  .menu-pop button{padding:12px 12px;font-size:15px}
+  .month-nav{grid-area:month;display:grid;grid-template-columns:44px 1fr 44px auto;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.12)}
+  .month-nav button{padding:11px 0;font-size:18px}
+  .month-nav span{min-width:0;font-size:15px}
+  .month-nav .today{padding:0 14px;font-size:13px}
+
+  /* ---- Barra de abas embaixo, como app ---- */
+  nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:50;width:auto;max-width:none;margin:0;border-radius:0;border:0;border-top:1px solid var(--border);
+    padding:6px 4px calc(6px + var(--safe-b));display:grid;grid-template-columns:repeat(5,1fr);gap:0;overflow:visible;
+    background:color-mix(in srgb, var(--surface) 88%, transparent);-webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px)}
+  nav.tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:10px;font-size:11px;font-weight:600;min-height:52px;justify-content:center}
+  nav.tabs button.active{background:none}
+  nav.tabs .tl{display:none}
+  nav.tabs .ts{display:block}
+  nav.tabs .ti{display:block;width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  nav.tabs button.active .ti{background:var(--accent-soft);border-radius:999px;width:24px;padding:3px 16px;box-sizing:content-box}
+
+  /* ---- Botão + flutuante ---- */
+  .fab{display:grid;place-items:center;position:fixed;right:16px;bottom:calc(var(--tabbar-h) + var(--safe-b) + 14px);z-index:45;width:56px;height:56px;border-radius:18px;border:0;
+    background:var(--accent);color:#fff;font-size:30px;font-weight:400;line-height:1;cursor:pointer;box-shadow:0 8px 24px rgba(79,70,229,.45)}
+  .fab[hidden]{display:none}
+  .fab:active{transform:scale(.94)}
+  .section-head .btn.primary{display:none}
+  .section-head{margin-bottom:10px}
+  .section-head h2{font-size:20px}
+  .section-head .toolbar .btn{padding:7px 12px;font-size:13.5px}
+
+  /* ---- Indicadores em grade 2×2 ---- */
+  .grid{gap:10px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpis .card{padding:12px 13px;border-radius:14px}
+  .kpi .label{font-size:12px;line-height:1.3}
+  .kpi .value{font-size:clamp(16px,5.2vw,21px);margin-top:4px;overflow-wrap:anywhere}
+  .kpi .sub{font-size:11.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .two{margin-top:10px}
+  .card{padding:14px;border-radius:14px}
+  .alerts{gap:6px;margin-bottom:10px}
+  .alert{padding:10px 12px;font-size:13px;align-items:flex-start}
+  .hbar{grid-template-columns:96px 1fr 38px}
+
+  /* ---- Filtros das listas ---- */
+  .card-head{padding:14px 14px 10px;align-items:stretch}
+  .card-head > div:first-child{width:100%}
+  .card-head .toolbar{width:100%}
+  .card-head .toolbar > *{flex:1 1 140px}
+  .filter-by{flex:1 1 100% !important}
+  .filter-by input,.filter-by #prospValue,.filter-by .fb-pick{width:auto;flex:1}
+  .filter-by select,.filter-by input,.search{padding:10px 10px;font-size:16px}
+
+  /* ---- Tabelas viram cartões ---- */
+  table.rt{min-width:0;display:block}
+  table.rt thead{display:none}
+  table.rt tbody{display:block}
+  table.rt tr{display:grid;gap:4px 10px;padding:14px;border-bottom:1px solid var(--border);align-items:center}
+  table.rt tr:last-child{border-bottom:0}
+  table.rt tbody tr:hover{background:none}
+  table.rt td{display:block;padding:0;border:0;white-space:normal;min-width:0 !important;text-align:left}
+  table.rt td.num{text-align:right}
+  table.rt td.empty{grid-column:1/-1;text-align:center;padding:28px 8px}
+  table.rt td:last-child:not(.empty){display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start !important;margin-top:8px}
+  table.rt td:last-child:empty{display:none}
+  table.rt .btn.sm{padding:8px 12px;font-size:13.5px;min-height:38px;border:1px solid var(--border)}
+  table.rt .btn.sm.danger{margin-left:auto}
+  table.rt .check{width:26px;height:26px;border-radius:8px}
+
+  /* Clientes: nome em cima, depois 2 colunas de dados */
+  .rt-cli tr{grid-template-columns:1fr 1fr}
+  .rt-cli td:nth-child(1){grid-column:1/2}
+  .rt-cli td:nth-child(6){grid-column:2/3;grid-row:1;text-align:right}
+  .rt-cli td:nth-child(2),.rt-cli td:nth-child(3),.rt-cli td:nth-child(4),.rt-cli td:nth-child(5){margin-top:6px}
+  table.rt-cli td.num{text-align:left}
+  .rt-cli td:nth-child(2)::before{content:'Venda'} .rt-cli td:nth-child(3)::before{content:'Data da venda'}
+  .rt-cli td:nth-child(4)::before{content:'Manutenção/mês'} .rt-cli td:nth-child(5)::before{content:'Vencimento'}
+  .rt-cli td:nth-child(n+2):nth-child(-n+5)::before{display:block;font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+  .rt-cli td:last-child{grid-column:1/-1}
+
+  /* Gastos fixos: ✓ | nome / categoria | valor / vencimento */
+  .rt-exp tr{grid-template-columns:30px 1fr auto}
+  .rt-exp td:nth-child(1){grid-column:1;grid-row:1/3;align-self:start;padding-top:1px}
+  .rt-exp td:nth-child(2){grid-column:2;grid-row:1}
+  .rt-exp td:nth-child(5){grid-column:3;grid-row:1;font-weight:700}
+  .rt-exp td:nth-child(3){grid-column:2;grid-row:2;color:var(--muted);font-size:13px}
+  .rt-exp td:nth-child(4){grid-column:3;grid-row:2;color:var(--muted);font-size:13px;text-align:right}
+  .rt-exp td:nth-child(6){display:none}
+  .rt-exp td:nth-child(7){grid-column:2/-1;grid-row:3}
+
+  /* Outros gastos: ✓ | descrição / categoria · cliente | valor / data */
+  .rt-var tr{grid-template-columns:30px 1fr auto}
+  .rt-var td:nth-child(1){grid-column:1;grid-row:1/4;align-self:start;padding-top:1px}
+  .rt-var td:nth-child(2){grid-column:2;grid-row:1}
+  .rt-var td:nth-child(6){grid-column:3;grid-row:1;font-weight:700}
+  .rt-var td:nth-child(3){grid-column:2;grid-row:2;color:var(--muted);font-size:13px}
+  .rt-var td:nth-child(5){grid-column:3;grid-row:2;color:var(--muted);font-size:13px;text-align:right}
+  .rt-var td:nth-child(4){grid-column:2/-1;grid-row:3;color:var(--muted);font-size:13px}
+  .rt-var td:nth-child(4)::before{content:'Cliente: '}
+  .rt-var td:nth-child(7){display:none}
+  .rt-var td:nth-child(8){grid-column:2/-1;grid-row:4}
+
+  /* Prospecção: nome + endereço, nicho · data, WhatsApp, situação, obs, ações */
+  .rt-prosp tr{grid-template-columns:1fr auto}
+  .rt-prosp td:nth-child(1){grid-column:1/-1}
+  .rt-prosp td:nth-child(2){grid-column:1;grid-row:2;font-size:13px;color:var(--muted)}
+  .rt-prosp td:nth-child(4){grid-column:2;grid-row:2;font-size:13px;color:var(--muted);text-align:right}
+  .rt-prosp td:nth-child(3){grid-column:1;grid-row:3;margin-top:6px}
+  .rt-prosp td:nth-child(5){grid-column:2;grid-row:3;margin-top:6px;text-align:right}
+  .rt-prosp td:nth-child(6){grid-column:1/-1;grid-row:4}
+  .rt-prosp td:nth-child(7){grid-column:1/-1;grid-row:5}
+  .rt-prosp .obs{max-width:none;margin-top:4px}
+  .rt-prosp .company{margin-top:2px}
+  .rt-prosp td:nth-child(3) .wa{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;background:var(--green-soft);font-size:14px;white-space:nowrap}
+  .rt-prosp .obs.vazio{display:none}
+  .rt-prosp .sit-select{font-size:13px;padding:9px 30px 9px 12px;max-width:100%}
+  #prospMore .btn{width:100%;justify-content:center;padding:12px}
+
+  /* ---- Formulários sobem de baixo (folha) ---- */
+  dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;border-bottom:0;max-height:92dvh;overflow:auto;
+    padding-bottom:var(--safe-b);animation:sheetUp .22s ease-out}
+  dialog form{padding:10px 16px 16px}
+  dialog form::before{content:'';display:block;width:40px;height:5px;border-radius:999px;background:var(--border);margin:0 auto 14px}
+  dialog h3{font-size:18px}
+  .field input,.field select,.field textarea{font-size:16px;padding:12px 12px}
+  .dlg-actions{position:sticky;bottom:0;background:var(--surface);padding:10px 0 4px;margin-top:4px}
+  .dlg-actions .btn{flex:1;justify-content:center;padding:13px;font-size:15px}
+
+  /* ---- Avisos e login ---- */
+  .toast{bottom:calc(var(--tabbar-h) + var(--safe-b) + 84px);max-width:calc(100vw - 32px);white-space:normal;text-align:center}
+  .login-card .field input{font-size:16px}
+}
+@keyframes sheetUp{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
