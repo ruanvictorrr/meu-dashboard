@@ -1,6 +1,7 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "dashboard", "runtimeExecutable": "python3", "runtimeArgs": ["-m", "http.server", "5178", "--directory", "frontend"], "port": 5178 }
+    { "name": "dashboard", "runtimeExecutable": "python3", "runtimeArgs": ["-m", "http.server", "5178", "--directory", "frontend"], "port": 5178 },
+    { "name": "dashboard-2", "runtimeExecutable": "python3", "runtimeArgs": ["-m", "http.server", "5179", "--directory", "frontend"], "port": 5179 }
   ]
 }

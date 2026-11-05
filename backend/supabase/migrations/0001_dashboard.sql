@@ -61,3 +61,7 @@ create policy "dono lê histórico" on public.dashboard_historico for select to 
 
 -- Visitantes sem login não acessam nada
 revoke all on public.dashboard, public.dashboard_historico from anon;
+
+-- Usuários logados podem usar as tabelas (o RLS acima limita às próprias linhas)
+grant select, insert, update, delete on public.dashboard to authenticated;
+grant select on public.dashboard_historico to authenticated;
