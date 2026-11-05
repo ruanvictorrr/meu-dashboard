@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meu Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Meu Dashboard</h1>
+      <p><span class="save-status"><i></i><span id="saveStatus">Dados salvos neste navegador</span></span></p>
+    </div>
+    <div class="top-actions">
+      <div class="month-nav">
+        <button id="prevMonth" aria-label="Mês anterior">‹</button>
+        <span id="monthLabel"></span>
+        <button id="nextMonth" aria-label="Próximo mês">›</button>
+        <button id="todayBtn" class="today" title="Voltar para o mês atual">Este mês</button>
+      </div>
+      <div class="menu">
+        <button class="btn" id="menuBtn">Dados ▾</button>
+        <div class="menu-pop" id="menuPop">
+          <button id="syncFileBtn">Salvar também num arquivo…</button>
+          <small id="syncInfo">Grava um .json no seu computador a cada alteração (Chrome/Edge).</small>
+          <hr>
+          <button id="prospDirBtn">Pasta das planilhas automáticas…</button>
+          <small id="prospDirInfo">Importa sozinho as planilhas novas da pasta Prospec Automatico.</small>
+          <hr>
+          <button id="exportBtn">Baixar backup (.json)</button>
+          <button id="importBtn">Restaurar backup…</button>
+          <button id="undoReplaceBtn" hidden>Desfazer última troca de dados</button>
+          <hr>
+          <button id="themeBtn">Alternar tema claro/escuro</button>
+          <button id="demoBtn">Carregar dados de exemplo</button>
+          <button id="resetBtn" class="danger" style="color:var(--red)">Apagar todos os dados</button>
+        </div>
+      </div>
+      <input type="file" id="importFile" accept="application/json" hidden>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button data-tab="overview" class="active">Visão geral</button>
+    <button data-tab="clients">Clientes</button>
+    <button data-tab="finance">Financeiro</button>
+    <button data-tab="variable">Outros gastos</button>
+    <button data-tab="prospects">Prospecção</button>
+  </nav>
+
+  <!-- VISÃO GERAL -->
+  <section class="view active" id="view-overview">
+    <div class="alerts" id="alerts"></div>
+    <div class="grid kpis" id="kpisOverview"></div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Entradas x gastos</h3>
+        <p class="hint">Últimos 6 meses, até o mês selecionado</p>
+        <div class="chart-legend">
+          <span><i style="background:var(--c1)"></i>Manutenções</span>
+          <span><i style="background:var(--c2)"></i>Vendas</span>
+          <span><i style="background:var(--c4)"></i>Gastos fixos</span>
+          <span><i style="background:var(--c3)"></i>Outros gastos</span>
+        </div>
+        <div id="barChart"></div>
+      </div>
+      <div class="card">
+        <h3>Recebimentos do mês</h3>
+        <p class="hint">Marque quando o cliente pagar a manutenção</p>
+        <div class="list" id="dueList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLIENTES -->
+  <section class="view" id="view-clients">
+    <div class="section-head">
+      <h2>Clientes</h2>
+      <div class="toolbar">
+        <button class="btn primary" id="addClientBtn">+ Novo cliente</button>
+      </div>
+    </div>
+    <div class="grid kpis" id="kpisClients"></div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Recebimentos do mês</h3>
+        <p class="hint">Quanto das manutenções deste mês já entrou</p>
+        <div id="clientReceipts"></div>
+      </div>
+      <div class="card">
+        <h3>De onde vem a receita</h3>
+        <p class="hint">Manutenção mensal por cliente</p>
+        <div id="clientDonut"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;padding:0;overflow:hidden">
+      <div class="card-head">
+        <div><h3>Carteira de clientes</h3><p class="hint" style="margin:0" id="clientHint">Clique no título da coluna para ordenar</p></div>
+        <div class="toolbar">
+          <div class="filter-by" data-fb="cli">
+            <select class="fb-field" title="Filtrar por"><option value="nome">Nome</option><option value="empresa">Empresa</option><option value="tudo">Tudo</option></select>
+            <input class="fb-text" placeholder="Digite o nome…">
+            <select class="fb-pick" style="display:none"></select>
+          </div>
+          <select class="search" id="clientFilter" style="min-width:0">
+            <option value="all">Todos</option>
+            <option value="late">Atrasados</option>
+            <option value="soon">Vencendo</option>
+            <option value="paid">Pagos no mês</option>
+            <option value="inactive">Inativos</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th data-sort="nome">Cliente</th>
+            <th data-sort="valorVenda" class="num">Venda</th>
+            <th data-sort="dataVenda">Data da venda</th>
+            <th data-sort="manutencao" class="num">Manutenção/mês</th>
+            <th data-sort="diaPagamento">Vencimento</th>
+            <th>Status do mês</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="clientRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINANCEIRO -->
+  <section class="view" id="view-finance">
+    <div class="section-head">
+      <h2>Controle financeiro</h2>
+      <div class="toolbar">
+        <button class="btn primary" id="addExpenseBtn">+ Novo gasto fixo</button>
+      </div>
+    </div>
+    <div class="grid kpis" id="kpisFinance"></div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Ponto de equilíbrio</h3>
+        <p class="hint">Quanto das manutenções mensais já cobre seus gastos fixos</p>
+        <div id="breakeven"></div>
+      </div>
+      <div class="card">
+        <h3>Para onde vai o dinheiro</h3>
+        <p class="hint">Gastos fixos por categoria</p>
+        <div id="donut"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;padding:0;overflow:hidden">
+      <div class="card-head">
+        <div><h3>Gastos fixos</h3><p class="hint" style="margin:0" id="expHint">Marque como pago quando quitar no mês selecionado</p></div>
+        <div class="toolbar">
+          <div class="filter-by" data-fb="exp">
+            <select class="fb-field" title="Filtrar por"><option value="nome">Nome</option><option value="categoria">Categoria</option><option value="tudo">Tudo</option></select>
+            <input class="fb-text" placeholder="Digite o nome do gasto…">
+            <select class="fb-pick" style="display:none"></select>
+          </div>
+          <select class="search" id="expStatus" style="min-width:0"><option value="all">Todos</option><option value="pago">Pagos</option><option value="apagar">A pagar</option></select>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th style="width:40px"></th>
+            <th>Gasto</th><th>Categoria</th><th>Vencimento</th><th class="num">Valor/mês</th><th class="num">% dos gastos</th><th></th>
+          </tr></thead>
+          <tbody id="expenseRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- OUTROS GASTOS (operacionais avulsos / anuais) -->
+  <section class="view" id="view-variable">
+    <div class="section-head">
+      <h2>Outros gastos da operação</h2>
+      <div class="toolbar">
+        <button class="btn primary" id="addVarBtn">+ Novo gasto</button>
+      </div>
+    </div>
+    <div class="grid kpis" id="kpisVariable"></div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Próximas renovações</h3>
+        <p class="hint">Gastos anuais que vão voltar nos próximos 12 meses</p>
+        <div class="list" id="renewList"></div>
+      </div>
+      <div class="card">
+        <h3>Para onde vai o dinheiro</h3>
+        <p class="hint">Outros gastos do mês por categoria</p>
+        <div id="varDonut"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;padding:0;overflow:hidden">
+      <div class="card-head">
+        <div><h3>Outros gastos</h3><p class="hint" style="margin:0" id="varHint">Domínios, licenças, equipamentos, serviços avulsos… Marque como pago quando quitar</p></div>
+        <div class="toolbar">
+          <div class="filter-by" data-fb="var">
+            <select class="fb-field" title="Filtrar por"><option value="descricao">Descrição</option><option value="categoria">Categoria</option><option value="cliente">Cliente</option><option value="tudo">Tudo</option></select>
+            <input class="fb-text" placeholder="Digite a descrição…">
+            <select class="fb-pick" style="display:none"></select>
+          </div>
+          <select class="search" id="varStatus" style="min-width:0"><option value="all">Todos</option><option value="pago">Pagos</option><option value="apagar">A pagar</option><option value="renov">Renovações</option><option value="anual">Anuais</option></select>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th style="width:40px"></th>
+            <th>Gasto</th><th>Categoria</th><th>Cliente</th><th>Data</th><th class="num">Valor</th><th class="num">% do mês</th><th></th>
+          </tr></thead>
+          <tbody id="varRows"></tbody>
+        </table>
+      </div>
+    </div>
+    <datalist id="varCatList"></datalist>
+  </section>
+
+  <!-- PROSPECÇÃO -->
+  <section class="view" id="view-prospects">
+    <div class="section-head">
+      <div class="prosp-title">
+        <h2>Prospecção</h2>
+        <button type="button" class="sheet-sync" id="sheetSync" hidden><i></i><span id="sheetSyncTxt">Planilhas automáticas</span></button>
+      </div>
+      <div class="toolbar">
+        <button class="btn" id="importProspBtn" title="Importa .xlsx (lê as cores) ou .csv">⇪ Importar planilha</button>
+        <input type="file" id="importProspFile" accept=".xlsx,.csv" hidden>
+        <button class="btn primary" id="addProspBtn">+ Nova prospecção</button>
+      </div>
+    </div>
+    <div class="grid kpis" id="kpisProspects"></div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Funil</h3>
+        <p class="hint">Em que pé estão todas as conversas</p>
+        <div id="prospFunnel"></div>
+      </div>
+      <div class="card">
+        <h3>Conversão por nicho</h3>
+        <p class="hint">% que deu certo entre as conversas encerradas</p>
+        <div id="prospNiche"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;padding:0;overflow:hidden">
+      <div class="card-head">
+        <div><h3>Contatos</h3><p class="hint" style="margin:0" id="prospHint">Mude a situação direto na tabela. Quando der certo, use "Virar cliente".</p></div>
+        <div class="toolbar">
+          <div class="filter-by">
+            <select id="prospField" title="Filtrar por">
+              <option value="nome">Nome</option><option value="nicho">Nicho</option><option value="cidade">Cidade</option><option value="bairro">Bairro</option>
+              <option value="numero">Número</option><option value="obs">Observação</option><option value="tudo">Tudo</option>
+            </select>
+            <input id="prospSearch" placeholder="Digite o nome…">
+            <select id="prospValue" style="display:none"></select>
+          </div>
+          <select class="search" id="prospFilter" style="min-width:0"></select>
+          <select class="search" id="prospDate" style="min-width:0" title="Data do contato">
+            <option value="any">Qualquer data</option><option value="today">Hoje</option><option value="yesterday">Ontem</option>
+            <option value="7d">Últimos 7 dias</option><option value="month">Este mês</option><option value="day">Escolher dia…</option>
+          </select>
+          <input type="date" class="search" id="prospDateDay" style="min-width:0;display:none" title="Dia do contato">
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Nome</th><th>Nicho</th><th>Número</th><th>Contato</th><th>Situação</th><th>Obs</th><th></th></tr></thead>
+          <tbody id="prospRows"></tbody>
+        </table>
+      </div>
+      <div id="prospMore" style="padding:12px 18px;text-align:center;display:none"><button class="btn sm" id="prospMoreBtn">Mostrar mais</button></div>
+    </div>
+  </section>
+</div>
+
+<!-- (seção de prospecção é inserida antes do fechamento do .wrap) -->
+<!-- Dialog prospecção -->
+<dialog id="prospDlg">
+  <form method="dialog" id="prospForm">
+    <h3 id="prospDlgTitle">Nova prospecção</h3>
+    <input type="hidden" name="id">
+    <div class="row2">
+      <div class="field"><label>Nome / empresa</label><input name="nome" required placeholder="Ex.: Pizzaria do Zé"></div>
+      <div class="field"><label>Nicho</label><input name="nicho" list="nichoList" placeholder="Ex.: Restaurante"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Número (WhatsApp)</label><input name="numero" inputmode="tel" placeholder="(11) 91234-5678"></div>
+      <div class="field"><label>Data do contato</label><input name="data" type="date"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Bairro / cidade</label><div style="display:flex;gap:8px"><input name="bairro" placeholder="Bairro"><input name="cidade" placeholder="Cidade" list="cidadeList"></div></div>
+      <div class="field"><label>Endereço</label><input name="endereco" placeholder="Rua, número"></div>
+    </div>
+    <div class="field"><label>Situação da conversa</label><select name="situacao" id="prospSitSelect"></select></div>
+    <div class="field"><label>Observações</label><textarea name="obs" rows="3" placeholder="Ex.: Pediu orçamento de site com cardápio. Retornar sexta."
+      style="padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);width:100%;resize:vertical;font:inherit;color:inherit"></textarea></div>
+    <datalist id="nichoList"></datalist>
+    <datalist id="cidadeList"><option value="Recife"><option value="Caruaru"><option value="Olinda"><option value="Paulista"><option value="Jaboatão dos Guararapes"></datalist>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" data-close>Cancelar</button>
+      <button type="submit" class="btn primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Dialog gasto variável -->
+<dialog id="varDlg">
+  <form method="dialog" id="varForm">
+    <h3 id="varDlgTitle">Novo gasto</h3>
+    <input type="hidden" name="id">
+    <div class="field"><label>Descrição</label><input name="descricao" required placeholder="Ex.: Domínio lopesodonto.com.br"></div>
+    <div class="row2">
+      <div class="field"><label>Valor (R$)</label><input name="valor" inputmode="decimal" required placeholder="0,00"></div>
+      <div class="field"><label>Data da compra</label><input name="data" type="date" required></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Categoria</label><input name="categoria" list="varCatList" placeholder="Ex.: Domínio"></div>
+      <div class="field"><label>Cliente</label><select name="clienteId" class="client-select"></select></div>
+    </div>
+    <div class="field"><label>Recorrência</label>
+      <select name="recorrencia"><option value="unico">Só esta vez</option><option value="anual">Renova todo ano</option></select></div>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" data-close>Cancelar</button>
+      <button type="submit" class="btn primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Dialog cliente -->
+<dialog id="clientDlg">
+  <form method="dialog" id="clientForm">
+    <h3 id="clientDlgTitle">Novo cliente</h3>
+    <input type="hidden" name="id">
+    <div class="row2">
+      <div class="field"><label>Nome</label><input name="nome" required placeholder="Ex.: Maria Souza"></div>
+      <div class="field"><label>Empresa</label><input name="empresa" placeholder="Ex.: Souza Doces"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Valor da venda (R$)</label><input name="valorVenda" inputmode="decimal" placeholder="0,00"></div>
+      <div class="field"><label>Data da venda</label><input name="dataVenda" type="date" required></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Manutenção mensal (R$)</label><input name="manutencao" inputmode="decimal" placeholder="0,00"></div>
+      <div class="field"><label>Dia de pagamento</label><input name="diaPagamento" type="number" min="1" max="31" required placeholder="Ex.: 10"></div>
+    </div>
+    <div class="field"><label>Situação</label>
+      <select name="ativo"><option value="1">Ativo (cobra manutenção)</option><option value="0">Inativo (encerrou contrato)</option></select>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" data-close>Cancelar</button>
+      <button type="submit" class="btn primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Dialog gasto -->
+<dialog id="expenseDlg">
+  <form method="dialog" id="expenseForm">
+    <h3 id="expenseDlgTitle">Novo gasto fixo</h3>
+    <input type="hidden" name="id">
+    <div class="field"><label>Descrição</label><input name="nome" required placeholder="Ex.: Hospedagem dos sites"></div>
+    <div class="row2">
+      <div class="field"><label>Valor mensal (R$)</label><input name="valor" inputmode="decimal" required placeholder="0,00"></div>
+      <div class="field"><label>Dia de vencimento</label><input name="dia" type="number" min="1" max="31" placeholder="Ex.: 5"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Categoria</label>
+        <input name="categoria" list="catList" required placeholder="Ex.: Ferramentas"></div>
+      <div class="field"><label>Começa em</label><input name="desde" type="month" required></div>
+    </div>
+    <div style="display:none">
+      <datalist id="catList"></datalist>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" data-close>Cancelar</button>
+      <button type="submit" class="btn primary">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="tip" id="tip"></div>
+<div class="toast" id="toast"></div>
+
+<script src="js/armazenamento.js"></script>
+<script src="js/planilhas-automaticas.js"></script>
+<script src="js/utilidades.js"></script>
+<script src="js/regras.js"></script>
+<script src="js/render.js"></script>
+<script src="js/importar-planilha.js"></script>
+<script src="js/formularios.js"></script>
+<script src="js/eventos.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
