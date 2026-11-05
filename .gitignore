@@ -1,0 +1,14 @@
+# Dados reais e cópias locais — nunca vão para o GitHub
+backups/
+*.bak*
+*.json.bak
+meu-dashboard-dados*.json
+*backup*.json
+*.xlsx
+*.csv
+
+# Ferramentas / sistema
+.playwright-mcp/
+.DS_Store
+.env
+.env.*
