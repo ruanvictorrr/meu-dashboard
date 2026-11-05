@@ -9,8 +9,10 @@ Meu Dashboard/
 ├── frontend/                  # o site (HTML + CSS + JS puro, sem build)
 │   ├── index.html             # estrutura das telas e formulários
 │   ├── css/
-│   │   └── styles.css         # tema claro/escuro, layout, componentes
+│   │   ├── styles.css         # tema claro/escuro, layout, componentes
+│   │   └── mobile.css         # ajustes só para celular (abas embaixo, cartões, folhas)
 │   └── js/                    # carregados nesta ordem pelo index.html
+│       ├── config.js          # URL e chave pública do Supabase
 │       ├── armazenamento.js   # estado, localStorage, arquivo de sincronização, IndexedDB
 │       ├── planilhas-automaticas.js  # importa sozinho as planilhas da pasta Prospec Automatico
 │       ├── utilidades.js      # formatação de dinheiro, datas, helpers
@@ -20,8 +22,10 @@ Meu Dashboard/
 │       ├── formularios.js     # diálogos de cadastro e edição
 │       ├── eventos.js         # cliques, filtros, menu Dados, backup, desfazer
 │       ├── reserva.js         # move Dentista/Recife "A contatar" para a reserva do Prospec Automático
+│       ├── nuvem.js           # login e sincronização com o Supabase
+│       ├── mobile.js          # botão + flutuante e troca de aba no celular
 │       └── main.js            # inicialização
-├── backend/                   # Supabase (próxima etapa) — ver backend/README.md
+├── backend/supabase/          # tabelas e regras de acesso (RLS) — ver backend/README.md
 ├── backups/                   # cópias locais (fora do Git)
 └── .claude/launch.json        # servidor de preview (localhost:5178)
 ```
