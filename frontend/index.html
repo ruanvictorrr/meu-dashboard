@@ -25,6 +25,11 @@
       <div class="menu">
         <button class="btn" id="menuBtn">Dados ▾</button>
         <div class="menu-pop" id="menuPop">
+          <div id="contaBox" hidden>
+            <small id="contaInfo"></small>
+            <button id="logoutBtn">Sair da conta</button>
+            <hr>
+          </div>
           <button id="syncFileBtn">Salvar também num arquivo…</button>
           <small id="syncInfo">Grava um .json no seu computador a cada alteração (Chrome/Edge).</small>
           <hr>
@@ -385,9 +390,22 @@
   </form>
 </dialog>
 
+<div class="login" id="loginTela" hidden>
+  <form class="login-card" id="loginForm">
+    <h2>Meu Dashboard</h2>
+    <p>Entre para ver seus dados em qualquer aparelho.</p>
+    <div class="field"><label for="loginEmail">E-mail</label><input id="loginEmail" type="email" autocomplete="username" required></div>
+    <div class="field"><label for="loginSenha">Senha</label><input id="loginSenha" type="password" autocomplete="current-password" required></div>
+    <div class="login-msg" id="loginMsg" role="alert"></div>
+    <button class="btn primary" id="loginBtn" type="submit">Entrar</button>
+  </form>
+</div>
+
 <div class="tip" id="tip"></div>
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
 <script src="js/armazenamento.js"></script>
 <script src="js/planilhas-automaticas.js"></script>
 <script src="js/utilidades.js"></script>
@@ -396,6 +414,7 @@
 <script src="js/importar-planilha.js"></script>
 <script src="js/formularios.js"></script>
 <script src="js/eventos.js"></script>
+<script src="js/nuvem.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
