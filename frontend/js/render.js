@@ -238,7 +238,7 @@ function renderProspects(){
       <td>${p.numero ? (wa?`<a class="wa" href="${wa}" target="_blank" rel="noopener" title="Abrir no WhatsApp">${esc(p.numero)} ↗</a>`:esc(p.numero)) : '—'}</td>
       <td>${fmtDate(p.data)}</td>
       <td><select class="sit-select ${st.cls}" data-sit="${p.id}" aria-label="Situação">${SITS.map(x=>`<option value="${x.k}" ${x.k===p.situacao?'selected':''}>${x.label}</option>`).join('')}</select></td>
-      <td><div class="obs" title="${esc(p.obs||'')}">${esc(p.obs||'—')}</div></td>
+      <td><div class="obs${p.obs?'':' vazio'}" title="${esc(p.obs||'')}">${esc(p.obs||'—')}</div></td>
       <td style="text-align:right">${p.situacao==='fechou' ? (isClient?'<span class="badge ok">É cliente</span>':`<button class="btn sm" data-to-client="${p.id}">Virar cliente</button>`) : ''}<button class="btn sm ghost" data-edit-prosp="${p.id}">Editar</button><button class="btn sm ghost danger" data-del-prosp="${p.id}">Excluir</button></td>
     </tr>`;}).join('')
     : `<tr><td colspan="7" class="empty">${all.length?'Nada encontrado com esse filtro.':'Nenhuma prospecção ainda. Clique em <b>+ Nova prospecção</b> ou <b>Importar planilha</b>.'}</td></tr>`;
