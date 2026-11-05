@@ -4,6 +4,6 @@
    NUNCA coloque aqui a "service_role" / "secret key".
    Se ficarem vazios, o dashboard funciona só neste navegador, como antes. */
 window.SUPABASE_CONFIG = {
-  url: '',
-  key: ''
+  url: 'https://gbsfmfwtychruhejceer.supabase.co',
+  key: 'sb_publishable_NLrS9DKkLd8TrTHL9Vf__w_rxsjllFA'
 };

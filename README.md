@@ -19,6 +19,7 @@ Meu Dashboard/
 │       ├── importar-planilha.js  # leitura de .xlsx/.csv (cores → situação), mescla sem duplicar
 │       ├── formularios.js     # diálogos de cadastro e edição
 │       ├── eventos.js         # cliques, filtros, menu Dados, backup, desfazer
+│       ├── reserva.js         # move Dentista/Recife "A contatar" para a reserva do Prospec Automático
 │       └── main.js            # inicialização
 ├── backend/                   # Supabase (próxima etapa) — ver backend/README.md
 ├── backups/                   # cópias locais (fora do Git)
