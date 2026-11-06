@@ -173,3 +173,12 @@ dialog h3{margin:0 0 16px;font-size:17px}
 .login-card p{margin:0 0 20px;color:var(--muted);font-size:13.5px}
 .login-card .btn{width:100%;justify-content:center;padding:11px 14px}
 .login-msg{min-height:18px;margin:2px 0 10px;color:var(--red);font-size:13px}
+
+/* Rodapé da lista de contatos: total conversado no período */
+.prosp-total{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 20px;padding:14px 18px;border-top:1px solid var(--border);background:var(--surface-2);font-size:14px}
+.prosp-total[hidden]{display:none}
+.prosp-total .lbl{color:var(--muted);margin-right:10px}
+.prosp-total b{font-size:18px;margin-right:4px;font-variant-numeric:tabular-nums}
+.prosp-total .fila{color:var(--muted);font-size:13px;margin-left:6px}
+.prosp-total .parts{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:13px}
+.prosp-total .parts i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
