@@ -31,9 +31,8 @@ window.nuvem = (()=>{
 
   function aplicar(remoto){
     state = {clients:[],expenses:[],variaveis:[],prospects:[], ...remoto};
-    migrate(state);
-    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
-    writeFile();
+    if(migrate(state)) save();
+    else { try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} writeFile(); }
     render(); renderSheetSync();
   }
 

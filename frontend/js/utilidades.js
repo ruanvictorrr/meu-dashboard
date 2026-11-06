@@ -17,10 +17,14 @@ const CHECK = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke
 const thisMonth = ym(new Date());
 let month = thisMonth;
 let sortKey = 'nome', sortDir = 1;
+const NICHO_PIZZA_HAMB = 'Pizzaria / hamburgueria';
+const ehPizzaHamb = (...txts) => txts.some(t => /pizz|hamb[uú]rg|burg(u)?er/i.test(t||''));
+const nichoCorreto = (nicho, nome) => ehPizzaHamb(nicho, nome) ? NICHO_PIZZA_HAMB : nicho;
 function migrate(st){
   let changed = false;
   (st.expenses||[]).forEach(e=>{ if(!e.desde){ e.desde = thisMonth; changed = true; } });
   if(dedupeProspects(st)) changed = true;
   (st.prospects||[]).forEach(p=>{ if(!p.cidade && p.origem==='planilha' && p.nicho==='Dentista' && p.bairro){ p.cidade='Recife'; changed = true; } });
+  (st.prospects||[]).forEach(p=>{ const n = nichoCorreto(p.nicho, p.nome); if(n !== p.nicho){ p.nicho = n; changed = true; } });
   return changed;
 }

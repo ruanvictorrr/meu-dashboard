@@ -88,6 +88,7 @@ function rowsToLeads(rows, fileName){
     else { const c = colorToSit(rows[i].color); if(c){ situacao = c.split(':')[0]; if(c.endsWith(':azul')) obsExtra = 'Marcado em azul na planilha (contato conhecido).'; } }
     let nicho = get('nicho');
     if(!nicho){ const cat = get('cat'); nicho = fileNiche || (/dentist|odonto/i.test(cat) ? 'Dentista' : cat); }
+    nicho = nichoCorreto(nicho, nome);
     const numero = fmtPhone(waNum || telNum);
     const obs = [get('obs'), obsExtra, (telNum && waNum && telNum!==waNum) ? `Tel.: ${fmtPhone(telNum)}` : ''].filter(Boolean).join(' ');
     let data = '';
