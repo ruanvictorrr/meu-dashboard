@@ -227,6 +227,15 @@ function renderProspects(){
   document.getElementById('prospHint').textContent = `${filtered.length} contato${filtered.length!==1?'s':''} neste filtro. Mude a situação direto na tabela; quando der certo, use "Virar cliente".`;
   document.getElementById('prospMore').style.display = filtered.length>prospLimit ? 'block' : 'none';
   document.getElementById('prospMoreBtn').textContent = `Mostrar mais (${filtered.length-prospLimit} restantes)`;
+  // rodapé: quantos foram conversados no período do filtro (a fila "A contatar" não conta)
+  const talked = filtered.filter(p=>p.situacao!=='a_contatar');
+  const totEl = document.getElementById('prospTotal'), dsel = document.getElementById('prospDate');
+  const dia = document.getElementById('prospDateDay').value;
+  const per = ({any:'Total geral',today:'Total de hoje',yesterday:'Total de ontem','7d':'Total dos últimos 7 dias',month:'Total deste mês',day: dia ? 'Total de '+fmtDate(dia) : 'Total geral'})[dsel.value] || 'Total';
+  const fila = filtered.length - talked.length;
+  totEl.hidden = !filtered.length;
+  totEl.innerHTML = `<div><span class="lbl">${esc(per)}</span><b>${talked.length}</b> lead${talked.length!==1?'s':''} conversado${talked.length!==1?'s':''}${fila?` <span class="fila">+ ${fila} na fila</span>`:''}</div>`
+    + `<div class="parts">${SITS.filter(x=>x.k!=='a_contatar').map(x=>[x,talked.filter(p=>p.situacao===x.k).length]).filter(([,n])=>n).map(([x,n])=>`<span><i style="background:${x.color}"></i>${n} ${esc(x.label.toLowerCase())}</span>`).join('')}</div>`;
   document.getElementById('prospRows').innerHTML = rows.length ? rows.map(p=>{
     const st = sit(p.situacao), wa = waLink(p.numero);
     const isClient = p.clienteId && state.clients.some(c=>c.id===p.clienteId);
