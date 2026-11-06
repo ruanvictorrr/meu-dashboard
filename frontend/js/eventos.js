@@ -104,11 +104,11 @@ document.getElementById('demoBtn').onclick=()=>{
   state.expenses.forEach(e=>e.desde=shiftMonth(thisMonth,-6));
   const pd = n => { const x=new Date(); x.setDate(x.getDate()-n); return x.toLocaleDateString('sv-SE'); };
   state.prospects = [
-    ['Pizzaria Bella Massa','Restaurante','(11) 98765-4321','Quer site com cardápio e botão de pedido.','proposta',2],
+    ['Pizzaria Bella Massa','Pizzaria / hamburgueria','(11) 98765-4321','Quer site com cardápio e botão de pedido.','proposta',2],
     ['Clínica Sorriso','Clínica / saúde','(11) 99876-1234','Fechou site + manutenção.','fechou',20],
     ['Barbearia Navalha','Beleza / estética','(11) 97654-3210','Achou caro, talvez ano que vem.','perdeu',15],
     ['Academia FitMax','Academia','(11) 96543-2109','Mandei mensagem, visualizou e não respondeu.','sem_resposta',10],
-    ['Hamburgueria Smash','Restaurante','(11) 95432-1098','Gostou do portfólio, pediu prazo.','conversa',1],
+    ['Hamburgueria Smash','Pizzaria / hamburgueria','(11) 95432-1098','Gostou do portfólio, pediu prazo.','conversa',1],
     ['Studio Glow','Beleza / estética','(11) 94321-0987','Fechou landing page.','fechou',30],
     ['Imobiliária Lar Novo','Imobiliária','(11) 93210-9876','','novo',0],
   ].map(([nome,nicho,numero,obs,situacao,d])=>({id:uid(),nome,nicho,numero,obs,situacao,data:pd(d),atualizado:new Date(Date.now()-d*864e5).toISOString()}));

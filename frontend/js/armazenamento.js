@@ -13,7 +13,7 @@ const SITS = [
 ];
 const OPEN_SITS = ['novo','aguardando','conversa','decidindo','proposta'];
 const sit = k => SITS.find(x=>x.k===k) || SITS[0];
-const NICHOS = ['Dentista','Restaurante','Cafeteria','Clínica / saúde','Advocacia','Beleza / estética','Academia','Loja / varejo','Imobiliária','Oficina / automotivo','Educação','Serviços'];
+const NICHOS = ['Dentista','Restaurante','Pizzaria / hamburgueria','Cafeteria','Clínica / saúde','Advocacia','Beleza / estética','Academia','Loja / varejo','Imobiliária','Oficina / automotivo','Educação','Serviços'];
 const DEFAULT_CATS = ['Ferramentas','Hospedagem','Marketing','Impostos','Pró-labore','Escritório','Outros'];
 const VAR_CATS = ['Domínio','Hospedagem','Licença / plugin','Template / tema','Equipamento','Serviço terceirizado','Marketing','Taxas e tarifas','Outros'];
 let state = load();
