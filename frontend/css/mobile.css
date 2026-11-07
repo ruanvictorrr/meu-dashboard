@@ -147,3 +147,15 @@ nav.tabs .ti, nav.tabs .ts, .fab{display:none}
   .login-card .field input{font-size:16px}
 }
 @keyframes sheetUp{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+
+/* ---- Horários por nicho no celular ---- */
+@media (max-width:720px){
+  .hor-card{margin-top:10px}
+  .hor-agora,.hor-hoje{padding:14px}
+  .hor-tag{min-width:0;width:100%;margin:2px 0 0}
+  .hor-chip{padding:6px 10px}
+  .hor-hoje li{grid-template-columns:78px 1fr}
+  .resp-tab{width:auto}
+  .resp-tab td{min-width:46px;padding:6px 2px}
+  .resp-tab tbody th{white-space:normal;width:92px;min-width:92px;max-width:92px;font-size:12px;line-height:1.25;position:sticky;left:0;background:var(--surface);z-index:1}
+}

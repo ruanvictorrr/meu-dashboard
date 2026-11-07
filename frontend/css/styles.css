@@ -182,3 +182,59 @@ dialog h3{margin:0 0 16px;font-size:17px}
 .prosp-total .fila{color:var(--muted);font-size:13px;margin-left:6px}
 .prosp-total .parts{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:13px}
 .prosp-total .parts i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+/* ---- Horários por nicho (aba Prospecção) ---- */
+.hor-card{margin-top:16px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:0;padding:0;overflow:hidden}
+.hor-agora{padding:18px}
+.hor-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.hor-head h3{margin:0;font-size:15px}
+.hor-relogio{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
+.hor-grupo{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.hor-grupo:first-of-type{margin-top:0}
+.hor-tag{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-right:4px;min-width:120px}
+.hor-tag.bom{color:var(--green)} .hor-tag.ok{color:var(--amber)} .hor-tag.fds{color:var(--amber)}
+.hor-chip{display:inline-flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 12px;border-radius:12px;border:1px solid transparent;cursor:pointer;text-align:left;line-height:1.25;transition:transform .12s,box-shadow .12s}
+.hor-chip b{font-size:13.5px;font-weight:600}
+.hor-chip span{font-size:11.5px;opacity:.85}
+.hor-chip.bom{background:var(--green-soft);color:var(--green);border-color:color-mix(in srgb,var(--green) 25%,transparent)}
+.hor-chip.ok,.hor-chip.fds{background:var(--amber-soft);color:var(--amber);border-color:color-mix(in srgb,var(--amber) 25%,transparent)}
+.hor-chip:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.hor-chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hor-vazio{color:var(--muted);font-size:13.5px;padding:6px 0}
+.hor-vazio b{color:var(--text)}
+.hor-hoje{background:var(--surface-2);padding:18px;border-left:1px solid var(--border);display:flex;flex-direction:column}
+.hor-hoje h3{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:8px}
+.hor-hoje ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;flex:1}
+.hor-hoje li{display:grid;grid-template-columns:86px 1fr;gap:8px;font-size:12.5px;padding:5px 8px;border-radius:8px;line-height:1.35}
+.hor-hoje li .hora{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600}
+.hor-hoje li.ativo{background:var(--green-soft);color:var(--green)}
+.hor-hoje li.ativo .hora{color:var(--green)}
+.hor-hoje li.passou{opacity:.45}
+.hor-link{margin-top:12px;font-size:12.5px;color:var(--accent);text-decoration:none;font-weight:500}
+.hor-link:hover{text-decoration:underline}
+.hor-selo{display:block;width:max-content;margin-top:3px;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px}
+.hor-selo.bom{background:var(--green-soft);color:var(--green)}
+.hor-selo.ok{background:var(--amber-soft);color:var(--amber)}
+.hor-selo.fora{color:var(--muted);font-weight:500;padding-left:0}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:5px 12px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--text);font-weight:600;box-shadow:var(--shadow)}
+.resp-tab{border-collapse:separate;border-spacing:3px;width:100%;font-size:13px}
+.resp-tab th,.resp-tab td{border-bottom:0}
+.resp-tab th{font-weight:600;color:var(--muted);font-size:11.5px;text-align:center;padding:4px 6px;white-space:nowrap;background:transparent;cursor:default}
+.resp-tab tbody th{text-transform:none;letter-spacing:0;font-size:13px}
+.resp-tab tbody th{text-align:left;color:var(--text);font-weight:500;padding-right:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.resp-tab td{text-align:center;padding:7px 4px;border-radius:8px;font-weight:600;font-variant-numeric:tabular-nums;min-width:56px;background:var(--surface-2)}
+.resp-tab td small{display:block;font-size:10.5px;font-weight:500;opacity:.7}
+.resp-tab td.vazio{background:transparent;color:var(--border);font-weight:400}
+.resp-tab td.alto{background:var(--green-soft);color:var(--green)}
+.resp-tab td.medio{background:var(--amber-soft);color:var(--amber)}
+.resp-tab td.baixo{background:var(--red-soft);color:var(--red)}
+.resp-tab td.pouco{color:var(--muted)}
+.resp-tab tr.total th,.resp-tab tr.total td{box-shadow:inset 0 2px 0 var(--border)}
+.resp-tab tr.total th{font-weight:700}
+.resp-tab td.empty{background:transparent;color:var(--muted);font-weight:400;text-align:left;padding:16px 4px}
+@media (max-width:860px){
+  .hor-card{grid-template-columns:1fr}
+  .hor-hoje{border-left:0;border-top:1px solid var(--border)}
+}
