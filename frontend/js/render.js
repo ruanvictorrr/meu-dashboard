@@ -243,7 +243,7 @@ function renderProspects(){
     const maps = p.maps || (p.endereco ? 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.nome+' '+p.endereco) : '');
     return `<tr>
       <td style="white-space:normal;min-width:220px"><div class="name">${esc(p.nome)}</div>${addr?`<div class="company">${maps?`<a class="wa" style="color:var(--muted)" href="${esc(maps)}" target="_blank" rel="noopener" title="Abrir no Google Maps">📍 ${esc(addr)}</a>`:esc(addr)}</div>`:''}</td>
-      <td>${esc(p.nicho||'—')}</td>
+      <td>${esc(p.nicho||'—')}${seloHorario(p)}</td>
       <td>${p.numero ? (wa?`<a class="wa" href="${wa}" target="_blank" rel="noopener" title="Abrir no WhatsApp">${esc(p.numero)} ↗</a>`:esc(p.numero)) : '—'}</td>
       <td>${fmtDate(p.data)}</td>
       <td><select class="sit-select ${st.cls}" data-sit="${p.id}" aria-label="Situação">${SITS.map(x=>`<option value="${x.k}" ${x.k===p.situacao?'selected':''}>${x.label}</option>`).join('')}</select></td>
@@ -252,6 +252,7 @@ function renderProspects(){
     </tr>`;}).join('')
     : `<tr><td colspan="7" class="empty">${all.length?'Nada encontrado com esse filtro.':'Nenhuma prospecção ainda. Clique em <b>+ Nova prospecção</b> ou <b>Importar planilha</b>.'}</td></tr>`;
 
+  renderHorarios(); renderRespostas();
   const nichos = [...new Set([...NICHOS,...all.map(p=>p.nicho).filter(Boolean)])];
   document.getElementById('nichoList').innerHTML = nichos.map(n=>`<option value="${esc(n)}">`).join('');
 }
