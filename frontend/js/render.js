@@ -2,7 +2,7 @@
 function render(){
   const ml = monthName(month); document.getElementById('monthLabel').textContent = ml[0].toUpperCase()+ml.slice(1);
   const tb = document.getElementById('todayBtn'); tb.classList.toggle('here', month===thisMonth); tb.title = month===thisMonth ? 'Você já está no mês atual' : 'Voltar para '+monthName(thisMonth);
-  renderOverview(); renderClients(); renderFinance(); renderVariable(); renderProspects();
+  renderOverview(); renderClients(); renderFinance(); renderVariable(); renderProspects(); renderProximos();
 }
 function kpi(label,value,sub='',cls=''){
   return `<div class="card kpi"><div class="label">${label}</div><div class="value ${cls}">${value}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
