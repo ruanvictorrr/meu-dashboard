@@ -66,9 +66,11 @@ function renderSheetSync(){
     else if(sheetSync.perm!=='granted'){ cls = 'warn'; txt = 'Planilhas automáticas · clique para liberar a pasta'; tip = 'O navegador pede sua confirmação para ler a pasta Prospec Automatico.'; }
     else if(!ai.ultimaPlanilha){ cls = 'ok'; txt = 'Planilhas conectadas · nenhuma planilha ainda'; tip = 'Clique para verificar agora.'; }
     else{
-      const atrasada = new Date(ai.ultimaPlanilha).toDateString()!==new Date().toDateString() && new Date().getHours() >= 9;
+      // a coleta roda de segunda a sexta às 06:47: no fim de semana não há planilha nova
+      const fds = [0,6].includes(new Date().getDay());
+      const atrasada = !fds && new Date(ai.ultimaPlanilha).toDateString()!==new Date().toDateString() && new Date().getHours() >= 9;
       cls = atrasada ? 'warn' : 'ok';
-      txt = 'Planilhas atualizadas ' + quando(ai.ultimaPlanilha) + (atrasada ? ' · nada de hoje ainda' : '');
+      txt = 'Planilhas atualizadas ' + quando(ai.ultimaPlanilha) + (atrasada ? ' · nada de hoje ainda' : fds ? ' · fim de semana sem coleta, a próxima sai segunda' : '');
       const lote = ai.ultimoLote ? `Última leva: ${ai.ultimoLote.arquivos} planilha(s), ${ai.ultimoLote.novos} leads novos.\n` : '';
       tip = lote + (ai.verificado ? 'Verificado ' + quando(ai.verificado) + '. ' : '') + 'Clique para verificar agora.';
     }

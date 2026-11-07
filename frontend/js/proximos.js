@@ -24,8 +24,13 @@ function renderProximos(){
   if(ganhou.length) add('ok','🎉', `Cadastrar ${ganhou.length} novo${ganhou.length>1?'s':''} cliente${ganhou.length>1?'s':''}`, `Deram certo: ${nomes(ganhou)} — use "Virar cliente"`, 'Ver', 'sit:fechou');
   // 4) follow-up de quem não respondeu (dia seguinte, na janela boa do nicho)
   const fu = P.filter(p=>p.situacao==='aguardando' && diasDesde(p.atualizado)>=1);
-  if(fu.length){
-    const agoraFu = fu.filter(p=>p.nicho && ['bom','ok','fds'].includes(horarioAgora(p.nicho).nivel));
+  const fimDeSemana = [0,6].includes(new Date().getDay());
+  if(fu.length && fimDeSemana){
+    // regra combinada: follow-up só em dia útil
+    add('idle','↩︎', `Segunda: follow-up em ${fu.length} lead${fu.length>1?'s':''} sem resposta`,
+      'Fim de semana não é dia de follow-up. Na segunda, mande no horário bom de cada nicho (selo na tabela).', 'Ver lista', 'sit:aguardando');
+  } else if(fu.length){
+    const agoraFu = fu.filter(p=>p.nicho && ['bom','ok'].includes(horarioAgora(p.nicho).nivel));
     add('soon','↩︎', `Follow-up em ${fu.length} lead${fu.length>1?'s':''} sem resposta`,
       agoraFu.length ? `<b>${agoraFu.length} no horário bom agora.</b> Mande em outra janela do que a primeira mensagem.` : 'Mande no horário bom de cada nicho (selo na tabela).', 'Fazer follow-up', 'sit:aguardando');
   }
@@ -51,6 +56,7 @@ function renderProximos(){
   const ren = upcomingRenewals().filter(r=>r.days<=7);
   if(ren.length) add('soon','↻', `Renovar ${ren.length} item${ren.length>1?'s':''} nesta semana`, ren.map(r=>`${esc(r.v.descricao)} (${brl(r.v.valor)})`).join(', '), 'Ver gastos', 'tab:variable');
 
+  if(fimDeSemana){ const i = passos.findIndex(x=>x.titulo.startsWith('Segunda: follow-up')); if(i>=0) passos.push(passos.splice(i,1)[0]); }
   const hoje = P.filter(p=>p.situacao!=='a_contatar' && p.data===today()).length;
   el.innerHTML = `
     <div class="prox-head"><div><h3>Próximos passos</h3><p class="hint" style="margin:0">${DIA_LONGO[new Date().getDay()]}, ${new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} · ${hoje} lead${hoje!==1?'s':''} contatado${hoje!==1?'s':''} hoje</p></div></div>
