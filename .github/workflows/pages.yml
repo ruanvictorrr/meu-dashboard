@@ -24,6 +24,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      # Cada publicação ganha uma versão nos links de css/ e js/ (?v=<commit>), para o
+      # navegador não misturar o HTML novo com CSS/JS antigos guardados em cache.
+      - name: Versionar CSS e JS
+        run: sed -i -E 's#(href|src)="((css|js)/[^"?]+)"#\1="\2?v=${{ github.sha }}"#g' frontend/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: frontend
