@@ -6,7 +6,7 @@ const PLANILHA_HORARIOS = 'https://docs.google.com/spreadsheets/d/1sQgcpU6zLxcmy
 const HORARIOS = {
   'Dentista':               {janelas:[['08:00','08:45'],['12:00','13:30']], dias:[2], alt:[3], fds:[[0,'18:00','20:00']], evitar:'Meio da manhã e da tarde (atendendo)'},
   'Restaurante':            {janelas:[['15:00','17:30']], dias:[1], alt:[2], fds:[], evitar:'11h–14h30, noite e fim de semana'},
-  'Pizzaria / hamburgueria':{janelas:[['14:00','17:00']], dias:[1,2], alt:[3], fds:[], evitar:'Noite (18h–23h) e fim de semana'},
+  'Pizzaria / hamburgueria':{janelas:[['14:00','17:00']], dias:[1], alt:[2], fds:[], evitar:'Noite (18h–23h) e fim de semana'},   // junto do bloco de Restaurante na segunda
   'Cafeteria':              {janelas:[['14:00','16:00'],['10:30','11:30']], dias:[1], alt:[2], fds:[], evitar:'7h–10h, 16h–18h e fim de semana'},
   'Clínica / saúde':        {janelas:[['07:30','08:30'],['12:00','13:30']], dias:[2], alt:[3], fds:[[0,'18:00','20:00']], evitar:'Horário de consultas'},
   'Advocacia':              {janelas:[['08:00','09:00'],['17:00','18:30']], dias:[2], alt:[3], fds:[[0,'18:00','20:00']], evitar:'9h–12h (audiências)'},
