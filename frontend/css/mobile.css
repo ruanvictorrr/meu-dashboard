@@ -159,3 +159,10 @@ nav.tabs .ti, nav.tabs .ts, .fab{display:none}
   .resp-tab td{min-width:46px;padding:6px 2px}
   .resp-tab tbody th{white-space:normal;width:92px;min-width:92px;max-width:92px;font-size:12px;line-height:1.25;position:sticky;left:0;background:var(--surface);z-index:1}
 }
+
+@media (max-width:720px){
+  .prox-card{margin-top:10px}
+  .prox{grid-template-columns:30px minmax(0,1fr);gap:10px}
+  .prox-ic{width:30px;height:30px;font-size:14px}
+  .prox .btn{grid-column:2;justify-self:start;margin-top:2px}
+}

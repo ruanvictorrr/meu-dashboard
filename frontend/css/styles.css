@@ -238,3 +238,20 @@ dialog h3{margin:0 0 16px;font-size:17px}
   .hor-card{grid-template-columns:1fr}
   .hor-hoje{border-left:0;border-top:1px solid var(--border)}
 }
+
+/* ---- Próximos passos (Visão geral) ---- */
+.prox-card{margin-top:16px}
+.prox-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:10px}
+.prox-head h3{margin:0 0 2px}
+.prox-lista{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.prox{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 4px;border-top:1px solid var(--border)}
+.prox:first-child{border-top:0}
+.prox-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:16px;background:var(--surface-2)}
+.prox.late .prox-ic{background:var(--red-soft)} .prox.soon .prox-ic{background:var(--amber-soft)}
+.prox.ok .prox-ic{background:var(--green-soft)} .prox.info .prox-ic{background:var(--accent-soft)}
+.prox-txt{min-width:0;display:flex;flex-direction:column;gap:1px}
+.prox-txt b{font-size:14px;font-weight:600}
+.prox.late .prox-txt b{color:var(--red)}
+.prox-txt span{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.prox-txt span b{font-size:inherit;color:var(--text)}
+.prox .btn{white-space:nowrap}

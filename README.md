@@ -19,6 +19,7 @@ Meu Dashboard/
 │       ├── regras.js          # regras de negócio (cobranças, status, totais do mês)
 │       ├── render.js          # desenha cada aba (visão geral, clientes, financeiro…)
 │       ├── horarios.js        # horários por nicho: "Agora é hora de falar com…", selo nos leads, resposta por dia/horário
+│       ├── proximos.js        # "Próximos passos" da Visão geral (cobranças, follow-ups, quem contatar agora)
 │       ├── importar-planilha.js  # leitura de .xlsx/.csv (cores → situação), mescla sem duplicar
 │       ├── formularios.js     # diálogos de cadastro e edição
 │       ├── eventos.js         # cliques, filtros, menu Dados, backup, desfazer
