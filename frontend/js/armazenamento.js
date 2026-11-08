@@ -33,12 +33,21 @@ function save(){
   writeFile();
   if(window.nuvem) nuvem.agendar();
 }
+// "19:08" se foi hoje, "ontem, 19:08", ou "05/11, 19:08"
+function quandoSalvo(iso){
+  if(!iso) return null;
+  const d = new Date(iso), h = d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const dia = x => x.toLocaleDateString('sv-SE'), ontem = new Date(); ontem.setDate(ontem.getDate()-1);
+  if(dia(d)===dia(new Date())) return h;
+  if(dia(d)===dia(ontem)) return 'ontem, '+h;
+  return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+', '+h;
+}
 function setStatus(){
-  const t = state.updatedAt ? new Date(state.updatedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : null;
+  const t = quandoSalvo(state.updatedAt);
   const n = window.nuvem && nuvem.status();
   const el = document.getElementById('saveStatus');
   el.parentElement.className = 'save-status ' + (n ? n[0] : 'ok');
-  el.parentElement.title = (window.nuvem && nuvem.erro) || '';
+  el.parentElement.title = (window.nuvem && nuvem.erro) || (state.updatedAt ? 'Última alteração nos dados: ' + new Date(state.updatedAt).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : '');
   el.textContent = n
     ? n[1] + (n[0]==='ok' && t ? ' · ' + t : '')
     : (fileHandle ? 'Salvo no navegador e no arquivo' : 'Salvo neste navegador') + (t ? ' · ' + t : '');
