@@ -128,15 +128,19 @@ function renderRespostas(){
   let semInfo = 0;
   enviados.forEach(p=>{ const k = chave(p); if(k===null){ semInfo++; return; } const n=p.nicho; tab[n]=tab[n]||new Map(); const c=tab[n].get(k)||{t:0,r:0}; c.t++; if(RESPONDEU.includes(p.situacao)) c.r++; tab[n].set(k,c); });
   const nichos = Object.keys(tab).sort((a,b)=>[...tab[b].values()].reduce((s,c)=>s+c.t,0)-[...tab[a].values()].reduce((s,c)=>s+c.t,0));
-  const cel = c => {
-    if(!c) return `<td class="vazio">—</td>`;
+  // coluna de agora: o dia da semana (modo Dia) ou a faixa de horário atual (modo Horário)
+  const agora = new Date(), hAgora = agora.getHours();
+  const kAgora = respModo==='dia' ? agora.getDay() : FAIXAS.find(f=>hAgora>=f[1]&&hAgora<f[2]) || null;
+  const hj = k => k===kAgora ? ' hoje' : '';
+  const cel = (c, k) => {
+    if(!c) return `<td class="vazio${hj(k)}">—</td>`;
     const r = c.r/c.t, cls = c.t<3 ? 'pouco' : r>=.35 ? 'alto' : r>=.15 ? 'medio' : 'baixo';
-    return `<td class="${cls}" title="${c.r} de ${c.t} responderam${c.t<3?' (poucos envios ainda)':''}">${Math.round(r*100)}%<small>${c.t}</small></td>`;
+    return `<td class="${cls}${hj(k)}" title="${c.r} de ${c.t} responderam${c.t<3?' (poucos envios ainda)':''}">${Math.round(r*100)}%<small>${c.t}</small></td>`;
   };
   const totais = new Map(); nichos.forEach(n=>tab[n].forEach((c,k)=>{ const t=totais.get(k)||{t:0,r:0}; t.t+=c.t; t.r+=c.r; totais.set(k,t); }));
   const corpo = nichos.length
-    ? nichos.map(n=>`<tr><th>${esc(n)}</th>${cols.map(([,k])=>cel(tab[n].get(k))).join('')}</tr>`).join('')
-      + `<tr class="total"><th>Todos</th>${cols.map(([,k])=>cel(totais.get(k))).join('')}</tr>`
+    ? nichos.map(n=>`<tr><th>${esc(n)}</th>${cols.map(([,k])=>cel(tab[n].get(k),k)).join('')}</tr>`).join('')
+      + `<tr class="total"><th>Todos</th>${cols.map(([,k])=>cel(totais.get(k),k)).join('')}</tr>`
     : `<tr><td colspan="${cols.length+1}" class="empty">${respModo==='faixa'?'A hora do envio passa a ser registrada quando você muda um lead de "A contatar" para outra situação. Os números aparecem aqui conforme você for mandando.':'Ainda não há leads contatados com nicho e data.'}</td></tr>`;
   el.innerHTML = `
     <div class="card-head" style="padding:0 0 12px">
@@ -144,7 +148,7 @@ function renderRespostas(){
       <p class="hint" style="margin:0">% de leads que responderam (entraram em conversa ou além). Número pequeno = quantos foram enviados.${semInfo&&respModo==='faixa'?` ${semInfo} envio${semInfo>1?'s':''} antigo${semInfo>1?'s':''} sem hora registrada.`:''}</p></div>
       <div class="seg" role="tablist"><button type="button" data-resp="dia" class="${respModo==='dia'?'on':''}">Dia</button><button type="button" data-resp="faixa" class="${respModo==='faixa'?'on':''}">Horário</button></div>
     </div>
-    <div style="overflow-x:auto"><table class="resp-tab"><thead><tr><th></th>${cols.map(([l])=>`<th>${l}</th>`).join('')}</tr></thead><tbody>${corpo}</tbody></table></div>`;
+    <div style="overflow-x:auto"><table class="resp-tab"><thead><tr><th></th>${cols.map(([l,k])=>k===kAgora?`<th class="hoje" title="${respModo==='dia'?'Hoje':'Agora'}"><span>${l}</span></th>`:`<th>${l}</th>`).join('')}</tr></thead><tbody>${corpo}</tbody></table></div>`;
 }
 
 document.addEventListener('click', e=>{
@@ -161,4 +165,4 @@ document.addEventListener('click', e=>{
   }
 });
 // atualiza o "agora" a cada minuto sem redesenhar a tela toda
-setInterval(()=>{ if(!document.hidden){ renderHorarios(); } }, 60*1000);
+setInterval(()=>{ if(!document.hidden){ renderHorarios(); renderRespostas(); } }, 60*1000);
