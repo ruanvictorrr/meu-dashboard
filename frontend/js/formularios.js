@@ -93,7 +93,7 @@ document.getElementById('addProspBtn').onclick=()=>openProsp();
 document.getElementById('prospSearch').oninput=()=>{ prospLimit=50; renderProspects(); };
 document.getElementById('prospValue').onchange=()=>{ prospLimit=50; renderProspects(); };
 document.getElementById('prospField').onchange=e=>{
-  const v = e.target.value, pick = ['nicho','bairro','cidade'].includes(v);
+  const v = e.target.value, pick = ['bairro','cidade'].includes(v);
   const inp = document.getElementById('prospSearch'), sel = document.getElementById('prospValue');
   inp.style.display = pick ? 'none' : ''; sel.style.display = pick ? '' : 'none';
   inp.value = ''; sel.value = '';
@@ -101,6 +101,13 @@ document.getElementById('prospField').onchange=e=>{
   prospLimit=50; renderProspects(); if(!pick) inp.focus();
 };
 document.getElementById('prospFilter').onchange=()=>{ prospLimit=50; renderProspects(); };
+document.getElementById('prospNicho').onchange=()=>{ prospLimit=50; renderProspects(); };
+document.getElementById('prospClear').onclick=()=>{
+  const fld = document.getElementById('prospField'); fld.value = 'nome'; fld.dispatchEvent(new Event('change'));
+  document.getElementById('prospNicho').value = '';
+  document.getElementById('prospFilter').value = 'contacted';
+  const d = document.getElementById('prospDate'); d.value = 'any'; d.dispatchEvent(new Event('change'));
+};
 document.getElementById('prospDate').onchange=e=>{
   const day = document.getElementById('prospDateDay');
   day.style.display = e.target.value==='day' ? '' : 'none';

@@ -151,7 +151,7 @@ const today = () => new Date().toLocaleDateString('sv-SE');
 let prospLimit = 50;
 function fieldOk(p){
   const field = document.getElementById('prospField').value;
-  if(['nicho','bairro','cidade'].includes(field)){ const v = document.getElementById('prospValue').value; return !v || (p[field]||'').trim()===v; }
+  if(['bairro','cidade'].includes(field)){ const v = document.getElementById('prospValue').value; return !v || (p[field]||'').trim()===v; }
   const q = normName(document.getElementById('prospSearch').value); if(!q) return true;
   if(field==='numero'){ const d = q.replace(/\D/g,''); return d ? phoneKey(p.numero).includes(d) : true; }
   const txt = field==='tudo' ? [p.nome,p.nicho,p.numero,p.obs,p.bairro,p.cidade,p.endereco].join(' ') : (p[field]||'');
@@ -168,6 +168,14 @@ function dateOk(d){
   if(mode==='month') return d.slice(0,7)===today().slice(0,7);
   if(mode==='day'){ const v = document.getElementById('prospDateDay').value; return !v || d===v; }
   return true;
+}
+// select fixo de nicho, com a quantidade de leads em cada um
+function prospNichoOptions(){
+  const sel = document.getElementById('prospNicho'), counts = {};
+  state.prospects.forEach(p=>{ const v = (p.nicho||'').trim(); if(v) counts[v]=(counts[v]||0)+1; });
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Todos os nichos</option>' + Object.keys(counts).sort((a,b)=>a.localeCompare(b,'pt-BR')).map(v=>`<option value="${esc(v)}">${esc(v)} (${counts[v]})</option>`).join('');
+  sel.value = counts[cur] ? cur : '';
 }
 function renderProspects(){
   const all = state.prospects;
@@ -207,16 +215,19 @@ function renderProspects(){
     fsel.value = 'contacted';
   }
   const f = fsel.value;
-  // opções do "Filtrar por" quando é nicho/bairro
+  prospNichoOptions();
+  const nicho = document.getElementById('prospNicho').value;
+  // opções do "Filtrar por" quando é bairro/cidade
   const field = document.getElementById('prospField').value, vsel = document.getElementById('prospValue');
-  if(['nicho','bairro','cidade'].includes(field)){
+  if(['bairro','cidade'].includes(field)){
     const counts = {}; all.forEach(p=>{ const v = (p[field]||'').trim(); if(v) counts[v]=(counts[v]||0)+1; });
     const cur = vsel.value;
-    vsel.innerHTML = `<option value="">${({nicho:'Todos os nichos',bairro:'Todos os bairros',cidade:'Todas as cidades'})[field]}</option>` + Object.keys(counts).sort((a,b)=>{ if(field==='cidade'){ const o=['Recife','Caruaru','Olinda','Paulista'], ia=o.indexOf(a), ib=o.indexOf(b); if(ia!==ib) return (ia<0?99:ia)-(ib<0?99:ib); } return a.localeCompare(b,'pt-BR'); }).map(v=>`<option value="${esc(v)}">${esc(v)} (${counts[v]})</option>`).join('');
+    vsel.innerHTML = `<option value="">${({bairro:'Todos os bairros',cidade:'Todas as cidades'})[field]}</option>` + Object.keys(counts).sort((a,b)=>{ if(field==='cidade'){ const o=['Recife','Caruaru','Olinda','Paulista'], ia=o.indexOf(a), ib=o.indexOf(b); if(ia!==ib) return (ia<0?99:ia)-(ib<0?99:ib); } return a.localeCompare(b,'pt-BR'); }).map(v=>`<option value="${esc(v)}">${esc(v)} (${counts[v]})</option>`).join('');
     vsel.value = counts[cur] ? cur : '';
   }
   const order = {proposta:0,conversa:1,aguardando:2,decidindo:3,novo:4,fechou:5,sem_resposta:6,perdeu:7,a_contatar:8};
   const filtered = all.filter(p=>{
+    if(nicho && (p.nicho||'').trim()!==nicho) return false;
     if(!fieldOk(p)) return false;
     if(!dateOk(p.data)) return false;
     if(f==='open') return OPEN_SITS.includes(p.situacao);
@@ -224,6 +235,12 @@ function renderProspects(){
     return f==='all' || p.situacao===f;
   }).sort((a,b)=>(order[a.situacao]??9)-(order[b.situacao]??9) || (b.atualizado||'').localeCompare(a.atualizado||'') || (a.ordem??0)-(b.ordem??0));
   const rows = filtered.slice(0,prospLimit);
+  // marca os filtros fora do padrão e mostra o "Limpar filtros"
+  const ativos = {prospNicho: !!nicho, prospFilter: f!=='contacted', prospDate: document.getElementById('prospDate').value!=='any'};
+  Object.entries(ativos).forEach(([id,on])=>document.getElementById(id).classList.toggle('ativo', on));
+  const busca = ['bairro','cidade'].includes(field) ? !!vsel.value : !!document.getElementById('prospSearch').value.trim();
+  document.querySelector('.filter-by:has(#prospField)')?.classList.toggle('ativo', busca);
+  document.getElementById('prospClear').hidden = !(busca || Object.values(ativos).some(Boolean));
   document.getElementById('prospHint').textContent = `${filtered.length} contato${filtered.length!==1?'s':''} neste filtro. Mude a situação direto na tabela; quando der certo, use "Virar cliente".`;
   document.getElementById('prospMore').style.display = filtered.length>prospLimit ? 'block' : 'none';
   document.getElementById('prospMoreBtn').textContent = `Mostrar mais (${filtered.length-prospLimit} restantes)`;

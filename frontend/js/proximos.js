@@ -71,11 +71,11 @@ function renderProximos(){
 
 function irProspeccao({sit, nicho}={}){
   document.querySelector('nav.tabs button[data-tab="prospects"]').click();
-  const field = document.getElementById('prospField'), val = document.getElementById('prospValue'), filt = document.getElementById('prospFilter');
+  const field = document.getElementById('prospField'), filt = document.getElementById('prospFilter');
   // sempre parte de um filtro limpo, para não herdar o nicho de um clique anterior
-  field.value = nicho ? 'nicho' : 'nome'; field.dispatchEvent(new Event('change'));
+  field.value = 'nome'; field.dispatchEvent(new Event('change'));
   document.getElementById('prospDate').value = 'any'; document.getElementById('prospDate').dispatchEvent(new Event('change'));
-  if(nicho) val.value = nicho;
+  prospNichoOptions(); document.getElementById('prospNicho').value = nicho || '';
   if(sit) filt.value = sit;
   prospLimit = 50; renderProspects();
   setTimeout(()=>document.querySelector(nicho||sit ? '.rt-prosp' : '#prospAgora')?.scrollIntoView({behavior:'smooth', block:'start'}), 50);
