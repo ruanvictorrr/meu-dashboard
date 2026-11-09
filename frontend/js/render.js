@@ -2,7 +2,7 @@
 function render(){
   const ml = monthName(month); document.getElementById('monthLabel').textContent = ml[0].toUpperCase()+ml.slice(1);
   const tb = document.getElementById('todayBtn'); tb.classList.toggle('here', month===thisMonth); tb.title = month===thisMonth ? 'Você já está no mês atual' : 'Voltar para '+monthName(thisMonth);
-  renderOverview(); renderClients(); renderFinance(); renderVariable(); renderProspects(); renderProximos();
+  renderOverview(); renderClients(); renderFinance(); renderVariable(); renderProspects(); renderProximos(); if(window.renderPrecos) renderPrecos();
 }
 function kpi(label,value,sub='',cls=''){
   return `<div class="card kpi"><div class="label">${label}</div><div class="value ${cls}">${value}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
@@ -189,6 +189,7 @@ function renderProspects(){
   document.getElementById('kpisProspects').innerHTML =
     kpi('Lista contatada', all.length ? pct.toFixed(pct<10?1:0).replace('.',',')+'%' : '—', all.length ? `${contacted.length} de ${all.length} leads · <b>${todayN} hoje</b>` : 'Importe uma planilha ou cadastre') +
     kpi('Em andamento', open, `${count('aguardando')} aguardando resposta · ${count('proposta')} com proposta`) +
+    (()=>{ const n = emNegociacao(); return kpi('Em negociação', n.n ? brl(n.imp) : '—', n.n ? `+ ${brl(n.men)}/mês · ${n.n} proposta${n.n>1?'s':''} em aberto` : 'Escolha o pacote na prospecção'); })() +
     kpi('Deram certo', won, `${lost} não deram certo · ${noAns} sem resposta`, won?'pos':'') +
     kpi('Taxa de conversão', closed ? ((won/closed)*100).toFixed(0)+'%' : '—', closed ? `${won} de ${closed} conversas encerradas` : 'Ainda sem conversas encerradas', closed ? (won/closed>=.2?'pos':'') : '');
 
