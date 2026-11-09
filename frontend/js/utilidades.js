@@ -1,7 +1,7 @@
 /* ========= Utilidades ========= */
 const brl = v => (v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const brlShort = v => { const a=Math.abs(v); return a>=1000 ? 'R$ '+(v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'k' : 'R$ '+Math.round(v); };
-const parseMoney = s => { if(s==null) return 0; s=String(s).trim().replace(/[R$\s]/g,''); if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.'); const n=parseFloat(s); return isNaN(n)?0:Math.round(n*100)/100; };
+const parseMoney = s => { if(s==null) return 0; s=String(s).trim().replace(/[R$\s]/g,''); if(s.includes(',') || /^\d{1,3}(\.\d{3})+$/.test(s)) s=s.replace(/\./g,'').replace(',','.'); const n=parseFloat(s); return isNaN(n)?0:Math.round(n*100)/100; };
 const moneyInput = v => v ? v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
 const uid = () => Math.random().toString(36).slice(2,10)+Date.now().toString(36);
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -28,3 +28,20 @@ function migrate(st){
   (st.prospects||[]).forEach(p=>{ const n = nichoCorreto(p.nicho, p.nome); if(n !== p.nicho){ p.nicho = n; changed = true; } });
   return changed;
 }
+
+/* Campos de valor (R$): coloca o ponto de milhar enquanto digita (18000 → 18.000; 1500,5 → 1.500,5) */
+function formatarValorDigitado(el){
+  const v = el.value, pos = el.selectionStart ?? v.length;
+  const antes = v.slice(0,pos).replace(/[^\d,]/g,'').length; // dígitos e vírgula antes do cursor
+  let s = v.replace(/[^\d,]/g,'');
+  const i = s.indexOf(',');
+  let inteiro = (i<0 ? s : s.slice(0,i)).replace(/^0+(?=\d)/,'');
+  const dec = i<0 ? null : s.slice(i+1).replace(/,/g,'').slice(0,2);
+  const out = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g,'.') + (dec===null ? '' : ','+dec);
+  if(out===v) return;
+  el.value = out;
+  let n = 0, p = 0;
+  while(p<out.length && n<antes){ if(/[\d,]/.test(out[p])) n++; p++; }
+  try{ el.setSelectionRange(p,p); }catch(e){}
+}
+document.addEventListener('input', e=>{ if(e.target.matches?.('input[inputmode="decimal"]')) formatarValorDigitado(e.target); }, true);

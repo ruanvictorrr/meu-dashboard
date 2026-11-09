@@ -70,7 +70,7 @@ function pisoAviso(el, info, valor){
 
 /* ---- Tela Preços ---- */
 const tierTag = t => `<span class="tier-tag" style="--tc:${TIER_COR[t]}">${t}</span>`;
-const precoIn = (path,v) => `<input class="price-in" data-preco="${path}" inputmode="decimal" value="${v ? String(v).replace('.',',') : ''}" placeholder="—">`;
+const precoIn = (path,v) => `<input class="price-in" data-preco="${path}" inputmode="decimal" value="${v ? v.toLocaleString('pt-BR',{maximumFractionDigits:2}) : ''}" placeholder="—">`;
 let precoTier = '';
 function renderPrecos(){
   const P = precos(), D = P.descontoMax;
