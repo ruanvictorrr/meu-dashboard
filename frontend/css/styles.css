@@ -144,6 +144,11 @@ dialog h3{margin:0 0 16px;font-size:17px}
 .filter-by input,.filter-by #prospValue,.filter-by .fb-pick{width:200px}
 .filter-by :focus{outline:none}
 .filter-by:focus-within{outline:2px solid var(--accent);outline-offset:-1px}
+.rt-prosp th[data-sort]{cursor:pointer;user-select:none;white-space:nowrap}
+.rt-prosp th[data-sort]:hover,.rt-prosp th.sorted{color:var(--text)}
+.rt-prosp th[data-sort]::after{content:attr(data-arrow);margin-left:4px;color:var(--accent)}
+.rt-prosp th[data-sort]:not(.sorted):hover::after{content:'↕';color:var(--muted)}
+#prospSort{display:none}
 .search.ativo,.filter-by.ativo{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .avatar{width:34px;height:34px;border-radius:10px;display:inline-grid;place-items:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
 .who{display:flex;align-items:center;gap:10px}

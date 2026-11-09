@@ -149,6 +149,19 @@ function renderVariable(){
 const waLink = n => { let d = String(n||'').replace(/\D/g,''); if(!d) return ''; if(d.length<=11) d = '55'+d; return 'https://wa.me/'+d; };
 const today = () => new Date().toLocaleDateString('sv-SE');
 let prospLimit = 50;
+// ordenação da tabela de contatos (clique no cabeçalho): k = coluna, dir 1 = crescente, -1 = decrescente
+let prospSort = {k:'', dir:1};
+const SIT_ORDER = {proposta:0,conversa:1,aguardando:2,decidindo:3,novo:4,fechou:5,sem_resposta:6,perdeu:7,a_contatar:8};
+function cmpProsp(a,b){
+  const {k,dir} = prospSort;
+  const txt = x => (x||'').trim();
+  let va, vb;
+  if(k==='situacao'){ va = SIT_ORDER[a.situacao]??9; vb = SIT_ORDER[b.situacao]??9; return (va-vb)*dir; }
+  if(k==='numero'){ va = phoneKey(a.numero); vb = phoneKey(b.numero); }
+  else { va = txt(a[k]); vb = txt(b[k]); }
+  if(!va !== !vb) return va ? -1 : 1; // vazios sempre no fim
+  return va.localeCompare(vb,'pt-BR',{numeric:true,sensitivity:'base'})*dir;
+}
 function fieldOk(p){
   const field = document.getElementById('prospField').value;
   if(['bairro','cidade'].includes(field)){ const v = document.getElementById('prospValue').value; return !v || (p[field]||'').trim()===v; }
@@ -226,7 +239,7 @@ function renderProspects(){
     vsel.innerHTML = `<option value="">${({bairro:'Todos os bairros',cidade:'Todas as cidades'})[field]}</option>` + Object.keys(counts).sort((a,b)=>{ if(field==='cidade'){ const o=['Recife','Caruaru','Olinda','Paulista'], ia=o.indexOf(a), ib=o.indexOf(b); if(ia!==ib) return (ia<0?99:ia)-(ib<0?99:ib); } return a.localeCompare(b,'pt-BR'); }).map(v=>`<option value="${esc(v)}">${esc(v)} (${counts[v]})</option>`).join('');
     vsel.value = counts[cur] ? cur : '';
   }
-  const order = {proposta:0,conversa:1,aguardando:2,decidindo:3,novo:4,fechou:5,sem_resposta:6,perdeu:7,a_contatar:8};
+  const order = SIT_ORDER;
   const filtered = all.filter(p=>{
     if(nicho && (p.nicho||'').trim()!==nicho) return false;
     if(!fieldOk(p)) return false;
@@ -234,7 +247,15 @@ function renderProspects(){
     if(f==='open') return OPEN_SITS.includes(p.situacao);
     if(f==='contacted') return p.situacao!=='a_contatar';
     return f==='all' || p.situacao===f;
-  }).sort((a,b)=>(order[a.situacao]??9)-(order[b.situacao]??9) || (b.atualizado||'').localeCompare(a.atualizado||'') || (a.ordem??0)-(b.ordem??0));
+  }).sort((a,b)=>(prospSort.k ? cmpProsp(a,b) : 0) || (order[a.situacao]??9)-(order[b.situacao]??9) || (b.atualizado||'').localeCompare(a.atualizado||'') || (a.ordem??0)-(b.ordem??0));
+  document.querySelectorAll('.rt-prosp th[data-sort]').forEach(th=>{
+    const on = th.dataset.sort===prospSort.k;
+    th.classList.toggle('sorted', on);
+    th.setAttribute('aria-sort', on ? (prospSort.dir>0?'ascending':'descending') : 'none');
+    th.dataset.arrow = on ? (prospSort.dir>0?'↑':'↓') : '';
+  });
+  const ssel = document.getElementById('prospSort'), sv = prospSort.k ? prospSort.k+':'+prospSort.dir : '';
+  ssel.value = [...ssel.options].some(o=>o.value===sv) ? sv : '';
   const rows = filtered.slice(0,prospLimit);
   // marca os filtros fora do padrão e mostra o "Limpar filtros"
   const ativos = {prospNicho: !!nicho, prospFilter: f!=='contacted', prospDate: document.getElementById('prospDate').value!=='any'};
