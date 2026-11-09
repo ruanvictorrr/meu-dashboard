@@ -64,6 +64,7 @@ nav.tabs .ti, nav.tabs .ts, .fab{display:none}
   .card-head .toolbar{width:100%}
   .card-head .toolbar > *{flex:1 1 140px}
   .filter-by{flex:1 1 100% !important}
+  #prospSort{display:block}
   .filter-by input,.filter-by #prospValue,.filter-by .fb-pick{width:auto;flex:1}
   .filter-by select,.filter-by input,.search{padding:10px 10px;font-size:16px}
 

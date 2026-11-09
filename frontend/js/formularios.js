@@ -104,6 +104,17 @@ document.getElementById('prospField').onchange=e=>{
   prospLimit=50; renderProspects(); if(!pick) inp.focus();
 };
 document.getElementById('prospFilter').onchange=()=>{ prospLimit=50; renderProspects(); };
+// cabeçalho clicável: 1º clique ordena, 2º inverte, 3º volta à ordem padrão (data começa pelos mais recentes)
+document.querySelectorAll('.rt-prosp th[data-sort]').forEach(th=>{
+  th.tabIndex = 0; th.title = 'Clique para ordenar';
+  const go = ()=>{
+    const k = th.dataset.sort, first = k==='data' ? -1 : 1;
+    prospSort = prospSort.k!==k ? {k, dir:first} : prospSort.dir===first ? {k, dir:-first} : {k:'', dir:1};
+    renderProspects();
+  };
+  th.onclick = go; th.onkeydown = e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } };
+});
+document.getElementById('prospSort').onchange=e=>{ const [k,d] = e.target.value.split(':'); prospSort = {k:k||'', dir:+d||1}; renderProspects(); };
 document.getElementById('prospNicho').onchange=()=>{ prospLimit=50; renderProspects(); };
 document.getElementById('prospClear').onclick=()=>{
   const fld = document.getElementById('prospField'); fld.value = 'nome'; fld.dispatchEvent(new Event('change'));
