@@ -78,7 +78,7 @@ function openProsp(id){
   const p = state.prospects.find(x=>x.id===id), f = document.getElementById('prospForm'); f.reset();
   document.getElementById('prospDlgTitle').textContent = p ? 'Editar prospecção' : 'Nova prospecção';
   f.id.value=p?.id||''; f.nome.value=p?.nome||''; f.nicho.value=p?.nicho||''; f.numero.value=p?.numero||'';
-  f.data.value=p ? (p.data||'') : new Date().toLocaleDateString('sv-SE'); f.situacao.value=p?.situacao||'novo'; f.obs.value=p?.obs||''; f.bairro.value=p?.bairro||''; f.cidade.value=p?.cidade||''; f.endereco.value=p?.endereco||'';
+  f.data.value=p ? (p.data||'') : new Date().toLocaleDateString('sv-SE'); f.situacao.value=p?.situacao||'novo'; f.obs.value=p?.obs||''; f.bairro.value=p?.bairro||''; f.cidade.value=p?.cidade||''; f.endereco.value=p?.endereco||''; f.maps.value=p?.maps||'';
   prospProdutoPreparar(p);
   prospDlg.showModal(); f.nome.focus();
 }
@@ -86,6 +86,12 @@ document.getElementById('prospForm').addEventListener('submit',e=>{
   const f = e.target;
   const data = {nome:f.nome.value.trim(), nicho:f.nicho.value.trim(), numero:f.numero.value.trim(), data:f.data.value || (f.situacao.value==='a_contatar' ? '' : today()), situacao:f.situacao.value, obs:f.obs.value.trim(), bairro:f.bairro.value.trim(), cidade:f.cidade.value.trim(), endereco:f.endereco.value.trim(), atualizado:new Date().toISOString(),
     propostaProduto:f.propostaProduto.value||null, propostaValor:parseMoney(f.propostaValor.value), propostaMensal:parseMoney(f.propostaMensal.value)};
+  // link do Maps: o digitado/colado; se ficou vazio ou é a busca automática de antes, refaz a busca com o nome/bairro atuais
+  const antigo = f.id.value ? (state.prospects.find(x=>x.id===f.id.value)?.maps||'') : '';
+  let maps = f.maps.value.trim();
+  if(maps && !/^https?:\/\//i.test(maps)) maps = 'https://'+maps;
+  if(!maps || (!mapsExato(maps) && maps===antigo)) maps = mapsBusca(data);
+  data.maps = maps;
   // hora do envio (para a "Resposta por horário"): só quando o contato é de hoje, senão a hora seria falsa
   const marcaHora = x => { if(x.situacao!=='a_contatar' && !x.contatadoEm && x.data===today()) x.contatadoEm = new Date().toISOString(); if(x.situacao==='followup' && !x.followupEm) x.followupEm = new Date().toISOString(); };
   if(f.id.value){ const x = state.prospects.find(x=>x.id===f.id.value); Object.assign(x,data); marcaHora(x); toast('Prospecção atualizada'); }

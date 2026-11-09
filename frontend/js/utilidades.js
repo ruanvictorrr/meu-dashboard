@@ -20,12 +20,25 @@ let sortKey = 'nome', sortDir = 1;
 const NICHO_PIZZA_HAMB = 'Pizzaria / hamburgueria';
 const ehPizzaHamb = (...txts) => txts.some(t => /pizz|hamb[uú]rg|burg(u)?er/i.test(t||''));
 const nichoCorreto = (nicho, nome) => ehPizzaHamb(nicho, nome) ? NICHO_PIZZA_HAMB : nicho;
+
+/* Link do Google Maps do lead: o da planilha (lugar exato, ".../maps/place/...") ou,
+   sem ele, uma busca pelo nome + bairro + cidade (ou endereço, se não tiver bairro/cidade). */
+const mapsExato = u => /\/maps\/place\//.test(u||'');
+const mapsBusca = p => {
+  if(!p || !p.nome) return '';
+  const onde = [p.bairro, p.cidade].filter(Boolean);
+  const q = [p.nome, ...(onde.length ? onde : [p.endereco])].filter(Boolean).join(' ');
+  return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);
+};
+// ao juntar dados de duas fontes: fica o link exato quando um dos dois for exato
+const mapsMelhor = (atual, novo) => !atual ? (novo||'') : (!mapsExato(atual) && mapsExato(novo)) ? novo : atual;
 function migrate(st){
   let changed = false;
   (st.expenses||[]).forEach(e=>{ if(!e.desde){ e.desde = thisMonth; changed = true; } });
   if(dedupeProspects(st)) changed = true;
   (st.prospects||[]).forEach(p=>{ if(!p.cidade && p.origem==='planilha' && p.nicho==='Dentista' && p.bairro){ p.cidade='Recife'; changed = true; } });
   (st.prospects||[]).forEach(p=>{ const n = nichoCorreto(p.nicho, p.nome); if(n !== p.nicho){ p.nicho = n; changed = true; } });
+  (st.prospects||[]).forEach(p=>{ if(!p.maps){ const m = mapsBusca(p); if(m){ p.maps = m; changed = true; } } });
   return changed;
 }
 

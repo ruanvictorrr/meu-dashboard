@@ -59,7 +59,8 @@ function dedupeProspects(st){
     if(!ex){ if(k) seen.set(k,p); keep.push(p); return; }
     merged++;
     if((RANK[p.situacao]??0) > (RANK[ex.situacao]??0)){ ex.situacao = p.situacao; ex.data = ex.data || p.data; }
-    ['bairro','endereco','maps','nicho','data','clienteId'].forEach(f=>{ if(!ex[f] && p[f]) ex[f]=p[f]; });
+    ['bairro','endereco','nicho','data','clienteId'].forEach(f=>{ if(!ex[f] && p[f]) ex[f]=p[f]; });
+    ex.maps = mapsMelhor(ex.maps, p.maps);
     if(p.obs && !(ex.obs||'').includes(p.obs)) ex.obs = [ex.obs,p.obs].filter(Boolean).join(' ');
   });
   st.prospects = keep;
@@ -107,12 +108,13 @@ function mergeLeads(leads){
     const k = phoneKey(l.numero), byN = byName.get(normName(l.nome));
     const ex = (k && byPhone.get(k)) || (byN && (!k || !phoneKey(byN.numero)) ? byN : null);
     if(!ex){
-      const np = {id:uid(), ...l, data: l.data || (l.situacao==='a_contatar' ? '' : t), atualizado:new Date().toISOString(), origem:'planilha'};
+      const np = {id:uid(), ...l, maps: l.maps || mapsBusca(l), data: l.data || (l.situacao==='a_contatar' ? '' : t), atualizado:new Date().toISOString(), origem:'planilha'};
       state.prospects.push(np); if(k) byPhone.set(k,np); byName.set(normName(l.nome),np);
       novos++; return;
     }
     // completa dados que faltam
-    ['bairro','cidade','endereco','maps','nicho'].forEach(k=>{ if(!ex[k] && l[k]) ex[k]=l[k]; });
+    ['bairro','cidade','endereco','nicho'].forEach(k=>{ if(!ex[k] && l[k]) ex[k]=l[k]; });
+    ex.maps = mapsMelhor(ex.maps, l.maps);
     if(l.obs && !(ex.obs||'').includes(l.obs)) ex.obs = [ex.obs,l.obs].filter(Boolean).join(' ');
     // a planilha só muda a situação se não for "voltar para trás" (ex.: branco nunca desfaz um contato)
     if(l.situacao!==ex.situacao && l.situacao!=='a_contatar' && ex.situacao!=='fechou' && (RANK[l.situacao]??0) >= (RANK[ex.situacao]??0)){
