@@ -79,6 +79,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .sit-select.ok{background-color:var(--green-soft);color:var(--green)} .sit-select.late{background-color:var(--red-soft);color:var(--red)}
 .sit-select.soon{background-color:var(--amber-soft);color:var(--amber)} .sit-select.idle{background-color:var(--surface-2);color:var(--muted)}
 .sit-select.info{background-color:var(--accent-soft);color:var(--accent)}
+.sit-select.fu{background-color:color-mix(in srgb,var(--c2) 16%,transparent);color:var(--c2)}
 .sit-select option{background:var(--surface);color:var(--text)}
 .hbar{display:grid;grid-template-columns:130px 1fr 44px;gap:10px;align-items:center;font-size:13px;padding:5px 0}
 .hbar .track{height:10px;background:var(--surface-2);border-radius:999px;overflow:hidden}

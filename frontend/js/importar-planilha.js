@@ -49,7 +49,7 @@ async function parseXLSX(buf){
 const fmtPhone = d => { d = String(d||'').replace(/\D/g,''); if(d.startsWith('55') && d.length>=12) d = d.slice(2); if(d.length===11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`; if(d.length===10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`; return d; };
 const phoneKey = s => { let d = String(s||'').replace(/\D/g,''); if(d.startsWith('55') && d.length>=12) d = d.slice(2); return d; };
 const normName = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
-const RANK = {a_contatar:0,novo:1,aguardando:2,decidindo:2,conversa:3,proposta:4,sem_resposta:5,perdeu:6,fechou:7};
+const RANK = {a_contatar:0,novo:1,aguardando:2,followup:2,decidindo:2,conversa:3,proposta:4,sem_resposta:5,perdeu:6,fechou:7};
 
 function dedupeProspects(st){
   const seen = new Map(), keep = []; let merged = 0;
