@@ -155,9 +155,7 @@ document.addEventListener('click', e=>{
   const b = e.target.closest('[data-resp]'); if(b){ respModo = b.dataset.resp; renderRespostas(); return; }
   const c = e.target.closest('[data-hor-nicho]');
   if(c){ // filtra a tabela de contatos por esse nicho, mostrando a fila
-    document.getElementById('prospField').value = 'nicho';
-    document.getElementById('prospField').dispatchEvent(new Event('change'));
-    const v = document.getElementById('prospValue'); v.value = c.dataset.horNicho;
+    prospNichoOptions(); document.getElementById('prospNicho').value = c.dataset.horNicho;
     const temFila = state.prospects.some(p=>p.nicho===c.dataset.horNicho && p.situacao==='a_contatar');
     const f = document.getElementById('prospFilter'); f.value = temFila ? 'a_contatar' : 'open';
     prospLimit = 50; renderProspects();
