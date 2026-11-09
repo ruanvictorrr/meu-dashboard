@@ -14,7 +14,10 @@ document.addEventListener('click',e=>{
   if(d.delProsp){ const p=state.prospects.find(x=>x.id===d.delProsp);
     if(confirm(`Excluir a prospecção "${p.nome}"?`)){ state.prospects=state.prospects.filter(x=>x.id!==p.id); save(); render(); toast('Prospecção excluída'); } }
   if(d.toClient){ const p=state.prospects.find(x=>x.id===d.toClient); pendingProspect = p.id;
-    openClient(); const f=document.getElementById('clientForm'); f.empresa.value=p.nome; f.nome.focus(); }
+    openClient(); const f=document.getElementById('clientForm'); f.empresa.value=p.nome;
+    if(p.propostaProduto) clientProdutoPreparar(p.propostaProduto);
+    if(p.propostaValor) f.valorVenda.value=moneyInput(p.propostaValor); if(p.propostaMensal) f.manutencao.value=moneyInput(p.propostaMensal);
+    f.valorVenda.dispatchEvent(new Event('input')); f.nome.focus(); }
   if(d.payVar){ const [id,ano,renov]=d.payVar.split('|'), v=state.variaveis.find(x=>x.id===id);
     if(renov==='1'){ v.renovacoes=v.renovacoes||{}; if(v.renovacoes[ano]) delete v.renovacoes[ano]; else v.renovacoes[ano]=new Date().toISOString(); }
     else v.pago = v.pago===false;

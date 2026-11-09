@@ -26,7 +26,7 @@ nav.tabs .ti, nav.tabs .ts, .fab{display:none}
 
   /* ---- Barra de abas embaixo, como app ---- */
   nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:50;width:auto;max-width:none;margin:0;border-radius:0;border:0;border-top:1px solid var(--border);
-    padding:6px 4px calc(6px + var(--safe-b));display:grid;grid-template-columns:repeat(5,1fr);gap:0;overflow:visible;
+    padding:6px 4px calc(6px + var(--safe-b));display:grid;grid-template-columns:repeat(6,1fr);gap:0;overflow:visible;
     background:color-mix(in srgb, var(--surface) 88%, transparent);-webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px)}
   nav.tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:10px;font-size:11px;font-weight:600;min-height:52px;justify-content:center}
   nav.tabs button.active{background:none}
@@ -165,4 +165,13 @@ nav.tabs .ti, nav.tabs .ts, .fab{display:none}
   .prox{grid-template-columns:30px minmax(0,1fr);gap:10px}
   .prox-ic{width:30px;height:30px;font-size:14px}
   .prox .btn{grid-column:2;justify-self:start;margin-top:2px}
+}
+
+/* Preços no celular: tabela rola para o lado; esconde a descrição para caber mais valores */
+@media (max-width:720px){
+  .preco-tbl{min-width:600px}
+  .preco-tbl td:first-child{min-width:110px}
+  #precoServicos .company{display:none}
+  .preco-tbl th,.preco-tbl td{padding:10px 8px}
+  .price-in{width:78px}
 }

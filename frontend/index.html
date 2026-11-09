@@ -63,6 +63,7 @@
     <button data-tab="finance"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5.5" width="19" height="14" rx="3"/><path d="M2.5 10h19M16.5 15h2"/></svg><span class="tl">Financeiro</span><span class="ts">Finanças</span></button>
     <button data-tab="variable"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2.5h12v19l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span class="tl">Outros gastos</span><span class="ts">Gastos</span></button>
     <button data-tab="prospects"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg><span class="tl">Prospecção</span><span class="ts">Prospec.</span></button>
+    <button data-tab="precos"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12.2V4.5A1.5 1.5 0 0 1 4.5 3h7.7l8.8 8.8-9.2 9.2z"/><circle cx="8" cy="8" r="1.6"/></svg><span class="tl">Preços</span><span class="ts">Preços</span></button>
   </nav>
 
   <!-- VISÃO GERAL -->
@@ -297,6 +298,43 @@
       <div class="prosp-total" id="prospTotal" hidden></div>
     </div>
   </section>
+
+  <!-- PREÇOS -->
+  <section class="view" id="view-precos">
+    <div class="section-head">
+      <h2>Tabela de preços</h2>
+      <div class="toolbar">
+        <div class="seg" id="precoTiers"><button data-tier="" class="on">Todos</button><button data-tier="Low">Low</button><button data-tier="Médio">Médio</button><button data-tier="High">High</button></div>
+        <button class="btn ghost" id="precoReset" hidden>Restaurar valores da planilha</button>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="card-head"><div><h3>Serviços</h3><p class="hint" style="margin:0">Clique num valor para editar. Só código = você entrega os arquivos · Completo = publicado, com domínio e configuração.</p></div></div>
+      <div style="overflow-x:auto"><table class="preco-tbl">
+        <thead><tr><th>Serviço</th><th>Ticket</th><th class="num">Só código</th><th class="num">Completo</th><th class="num">Mensal</th><th class="num">Piso</th><th class="num">1º ano</th></tr></thead>
+        <tbody id="precoServicos"></tbody>
+      </table></div>
+    </div>
+    <div class="card" style="margin-top:16px;padding:0;overflow:hidden">
+      <div class="card-head"><div><h3>Pacotes</h3><p class="hint" style="margin:0">O preço avulso (riscado) é a soma dos serviços e muda sozinho quando você edita a tabela acima.</p></div></div>
+      <div style="overflow-x:auto"><table class="preco-tbl">
+        <thead><tr><th>Pacote</th><th>Ticket</th><th class="num">Avulso</th><th class="num">Pacote</th><th class="num">Mensal</th><th class="num">Desconto</th><th class="num">Piso</th><th class="num">Economia 1º ano</th></tr></thead>
+        <tbody id="precoPacotes"></tbody>
+      </table></div>
+    </div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Quantos clientes cobrem seus gastos fixos</h3>
+        <p class="hint">Quantos clientes de cada tipo faltam para as manutenções pagarem os gastos fixos do mês</p>
+        <div id="precoEquilibrio"></div>
+      </div>
+      <div class="card">
+        <h3>Desconto máximo</h3>
+        <p class="hint">Define o piso de cada preço. A mensalidade e o "só código" nunca levam desconto.</p>
+        <div id="precoDescontos"></div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <!-- (seção de prospecção é inserida antes do fechamento do .wrap) -->
@@ -318,6 +356,11 @@
       <div class="field"><label>Endereço</label><input name="endereco" placeholder="Rua, número"></div>
     </div>
     <div class="field"><label>Situação da conversa</label><select name="situacao" id="prospSitSelect"></select></div>
+    <div class="field"><label>Proposta (serviço ou pacote)</label><select name="propostaProduto" id="prospProduto"></select></div>
+    <div class="row2">
+      <div class="field"><label>Valor da proposta (R$)</label><input name="propostaValor" inputmode="decimal" placeholder="0,00"><small class="piso-hint" id="prospPiso"></small></div>
+      <div class="field"><label>Mensalidade proposta (R$)</label><input name="propostaMensal" inputmode="decimal" placeholder="0,00"></div>
+    </div>
     <div class="field"><label>Observações</label><textarea name="obs" rows="3" placeholder="Ex.: Pediu orçamento de site com cardápio. Retornar sexta."
       style="padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);width:100%;resize:vertical;font:inherit;color:inherit"></textarea></div>
     <datalist id="nichoList"></datalist>
@@ -362,12 +405,17 @@
       <div class="field"><label>Empresa</label><input name="empresa" placeholder="Ex.: Souza Doces"></div>
     </div>
     <div class="row2">
-      <div class="field"><label>Valor da venda (R$)</label><input name="valorVenda" inputmode="decimal" placeholder="0,00"></div>
+      <div class="field"><label>Serviço ou pacote</label><select name="produto" id="clientProduto"></select></div>
       <div class="field"><label>Data da venda</label><input name="dataVenda" type="date" required></div>
     </div>
     <div class="row2">
+      <div class="field"><label>Valor da venda (R$)</label><input name="valorVenda" inputmode="decimal" placeholder="0,00"><small class="piso-hint" id="clientPiso"></small></div>
+    <div class="row2">
       <div class="field"><label>Manutenção mensal (R$)</label><input name="manutencao" inputmode="decimal" placeholder="0,00"></div>
+    </div>
+    <div class="row2">
       <div class="field"><label>Dia de pagamento</label><input name="diaPagamento" type="number" min="1" max="31" required placeholder="Ex.: 10"></div>
+      <div class="field"></div>
     </div>
     <div class="field"><label>Situação</label>
       <select name="ativo"><option value="1">Ativo (cobra manutenção)</option><option value="0">Inativo (encerrou contrato)</option></select>
@@ -430,6 +478,7 @@
 <script src="js/proximos.js"></script>
 <script src="js/importar-planilha.js"></script>
 <script src="js/formularios.js"></script>
+<script src="js/precos.js"></script>
 <script src="js/eventos.js"></script>
 <script src="js/reserva.js"></script>
 <script src="js/nuvem.js"></script>
