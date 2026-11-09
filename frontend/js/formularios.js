@@ -87,7 +87,7 @@ document.getElementById('prospForm').addEventListener('submit',e=>{
   const data = {nome:f.nome.value.trim(), nicho:f.nicho.value.trim(), numero:f.numero.value.trim(), data:f.data.value || (f.situacao.value==='a_contatar' ? '' : today()), situacao:f.situacao.value, obs:f.obs.value.trim(), bairro:f.bairro.value.trim(), cidade:f.cidade.value.trim(), endereco:f.endereco.value.trim(), atualizado:new Date().toISOString(),
     propostaProduto:f.propostaProduto.value||null, propostaValor:parseMoney(f.propostaValor.value), propostaMensal:parseMoney(f.propostaMensal.value)};
   // hora do envio (para a "Resposta por horário"): só quando o contato é de hoje, senão a hora seria falsa
-  const marcaHora = x => { if(x.situacao!=='a_contatar' && !x.contatadoEm && x.data===today()) x.contatadoEm = new Date().toISOString(); };
+  const marcaHora = x => { if(x.situacao!=='a_contatar' && !x.contatadoEm && x.data===today()) x.contatadoEm = new Date().toISOString(); if(x.situacao==='followup' && !x.followupEm) x.followupEm = new Date().toISOString(); };
   if(f.id.value){ const x = state.prospects.find(x=>x.id===f.id.value); Object.assign(x,data); marcaHora(x); toast('Prospecção atualizada'); }
   else { const x = {id:uid(),...data}; marcaHora(x); state.prospects.push(x); toast('Prospecção cadastrada'); }
   save(); render();
@@ -139,6 +139,7 @@ document.addEventListener('change',e=>{
   const el = e.target.closest('[data-sit]'); if(!el) return;
   const p = state.prospects.find(x=>x.id===el.dataset.sit);
   if(p.situacao==='a_contatar' && el.value!=='a_contatar'){ if(!p.data) p.data = today(); if(!p.contatadoEm) p.contatadoEm = new Date().toISOString(); }
+  if(el.value==='followup' && p.situacao!=='followup') p.followupEm = new Date().toISOString();
   p.situacao = el.value; p.atualizado = new Date().toISOString();
   save(); render();
   toast(p.situacao==='fechou' ? `🎉 ${p.nome} deu certo! Use "Virar cliente" para cadastrar.` : `Situação: ${sit(p.situacao).label}`);

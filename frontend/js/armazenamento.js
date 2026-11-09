@@ -4,6 +4,7 @@ const SITS = [
   {k:'a_contatar',label:'A contatar',cls:'idle',color:'var(--c7)'},
   {k:'novo',label:'Novo contato',cls:'idle',color:'var(--c7)'},
   {k:'aguardando',label:'Aguardando resposta',cls:'soon',color:'var(--c3)'},
+  {k:'followup',label:'Follow-up enviado',cls:'fu',color:'var(--c2)'},
   {k:'conversa',label:'Em conversa',cls:'info',color:'var(--c1)'},
   {k:'decidindo',label:'Decidindo',cls:'idle',color:'var(--c2)'},
   {k:'proposta',label:'Proposta enviada',cls:'info',color:'var(--c6)'},
@@ -11,7 +12,7 @@ const SITS = [
   {k:'perdeu',label:'Não deu certo',cls:'late',color:'var(--c4)'},
   {k:'sem_resposta',label:'Sem resposta',cls:'idle',color:'var(--c7)'},
 ];
-const OPEN_SITS = ['novo','aguardando','conversa','decidindo','proposta'];
+const OPEN_SITS = ['novo','aguardando','followup','conversa','decidindo','proposta'];
 const sit = k => SITS.find(x=>x.k===k) || SITS[0];
 const NICHOS = ['Dentista','Restaurante','Pizzaria / hamburgueria','Cafeteria','Clínica / saúde','Advocacia','Beleza / estética','Academia','Loja / varejo','Imobiliária','Oficina / automotivo','Educação','Serviços'];
 const DEFAULT_CATS = ['Ferramentas','Hospedagem','Marketing','Impostos','Pró-labore','Escritório','Outros'];

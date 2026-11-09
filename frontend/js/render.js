@@ -151,7 +151,7 @@ const today = () => new Date().toLocaleDateString('sv-SE');
 let prospLimit = 50;
 // ordenação da tabela de contatos (clique no cabeçalho): k = coluna, dir 1 = crescente, -1 = decrescente
 let prospSort = {k:'', dir:1};
-const SIT_ORDER = {proposta:0,conversa:1,aguardando:2,decidindo:3,novo:4,fechou:5,sem_resposta:6,perdeu:7,a_contatar:8};
+const SIT_ORDER = {proposta:0,conversa:1,aguardando:2,followup:3,decidindo:4,novo:5,fechou:6,sem_resposta:7,perdeu:8,a_contatar:9};
 function cmpProsp(a,b){
   const {k,dir} = prospSort;
   const txt = x => (x||'').trim();
@@ -201,7 +201,7 @@ function renderProspects(){
   const pct = all.length ? (contacted.length/all.length)*100 : 0;
   document.getElementById('kpisProspects').innerHTML =
     kpi('Lista contatada', all.length ? pct.toFixed(pct<10?1:0).replace('.',',')+'%' : '—', all.length ? `${contacted.length} de ${all.length} leads · <b>${todayN} hoje</b>` : 'Importe uma planilha ou cadastre') +
-    kpi('Em andamento', open, `${count('aguardando')} aguardando resposta · ${count('proposta')} com proposta`) +
+    kpi('Em andamento', open, `${count('aguardando')} aguardando · ${count('followup')} com follow-up · ${count('proposta')} com proposta`) +
     (()=>{ const n = emNegociacao(); return kpi('Em negociação', n.n ? brl(n.imp) : '—', n.n ? `+ ${brl(n.men)}/mês · ${n.n} proposta${n.n>1?'s':''} em aberto` : 'Escolha o pacote na prospecção'); })() +
     kpi('Deram certo', won, `${lost} não deram certo · ${noAns} sem resposta`, won?'pos':'') +
     kpi('Taxa de conversão', closed ? ((won/closed)*100).toFixed(0)+'%' : '—', closed ? `${won} de ${closed} conversas encerradas` : 'Ainda sem conversas encerradas', closed ? (won/closed>=.2?'pos':'') : '');
@@ -284,7 +284,7 @@ function renderProspects(){
       <td style="white-space:normal;min-width:220px"><div class="name">${esc(p.nome)}</div>${addr?`<div class="company">${maps?`<a class="wa" style="color:var(--muted)" href="${esc(maps)}" target="_blank" rel="noopener" title="Abrir no Google Maps">📍 ${esc(addr)}</a>`:esc(addr)}</div>`:''}</td>
       <td>${esc(p.nicho||'—')}${seloHorario(p)}</td>
       <td>${p.numero ? (wa?`<a class="wa" href="${wa}" target="_blank" rel="noopener" title="Abrir no WhatsApp">${esc(p.numero)} ↗</a>`:esc(p.numero)) : '—'}</td>
-      <td>${fmtDate(p.data)}</td>
+      <td>${fmtDate(p.data)}${p.followupEm?`<div class="company" title="Follow-up enviado">↩︎ follow-up ${fmtDate(p.followupEm.slice(0,10))}</div>`:''}</td>
       <td><select class="sit-select ${st.cls}" data-sit="${p.id}" aria-label="Situação">${SITS.map(x=>`<option value="${x.k}" ${x.k===p.situacao?'selected':''}>${x.label}</option>`).join('')}</select></td>
       <td><div class="obs${p.obs?'':' vazio'}" title="${esc(p.obs||'')}">${esc(p.obs||'—')}</div></td>
       <td style="text-align:right">${p.situacao==='fechou' ? (isClient?'<span class="badge ok">É cliente</span>':`<button class="btn sm" data-to-client="${p.id}">Virar cliente</button>`) : ''}<button class="btn sm ghost" data-edit-prosp="${p.id}">Editar</button><button class="btn sm ghost danger" data-del-prosp="${p.id}">Excluir</button></td>

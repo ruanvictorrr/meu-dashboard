@@ -34,6 +34,10 @@ function renderProximos(){
     add('soon','↩︎', `Follow-up em ${fu.length} lead${fu.length>1?'s':''} sem resposta`,
       agoraFu.length ? `<b>${agoraFu.length} no horário bom agora.</b> Mande em outra janela do que a primeira mensagem.` : 'Mande no horário bom de cada nicho (selo na tabela).', 'Fazer follow-up', 'sit:aguardando');
   }
+  // 4b) já teve follow-up e continua sem resposta: hora de encerrar
+  const fuSem = P.filter(p=>p.situacao==='followup' && diasDesde(p.followupEm||p.atualizado)>=3);
+  if(fuSem.length) add('idle','⌛', `Encerrar ${fuSem.length} lead${fuSem.length>1?'s':''} sem resposta ao follow-up`,
+    `Follow-up há 3+ dias sem retorno: ${nomes(fuSem)} — marque "Sem resposta"`, 'Ver lista', 'sit:followup');
   // 5) quem contatar agora
   const fila = P.filter(p=>p.situacao==='a_contatar');
   const porNicho = {}; fila.forEach(p=>{ const n=p.nicho||''; porNicho[n]=(porNicho[n]||0)+1; });
