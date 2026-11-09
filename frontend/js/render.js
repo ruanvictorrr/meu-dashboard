@@ -279,9 +279,9 @@ function renderProspects(){
     const st = sit(p.situacao), wa = waLink(p.numero);
     const isClient = p.clienteId && state.clients.some(c=>c.id===p.clienteId);
     const addr = [[p.bairro,p.cidade].filter(Boolean).join(', '),p.endereco].filter(Boolean).join(' · ');
-    const maps = p.maps || (p.endereco ? 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.nome+' '+p.endereco) : '');
+    const maps = p.maps || mapsBusca(p);
     return `<tr>
-      <td style="white-space:normal;min-width:220px"><div class="name">${esc(p.nome)}</div>${addr?`<div class="company">${maps?`<a class="wa" style="color:var(--muted)" href="${esc(maps)}" target="_blank" rel="noopener" title="Abrir no Google Maps">📍 ${esc(addr)}</a>`:esc(addr)}</div>`:''}</td>
+      <td style="white-space:normal;min-width:220px"><div class="name">${esc(p.nome)}</div>${maps?`<div class="company"><a class="wa" style="color:var(--muted)" href="${esc(maps)}" target="_blank" rel="noopener" title="Abrir no Google Maps">📍 ${esc(addr||'Ver no Google Maps')}</a></div>`:addr?`<div class="company">${esc(addr)}</div>`:''}</td>
       <td>${esc(p.nicho||'—')}${seloHorario(p)}</td>
       <td>${p.numero ? (wa?`<a class="wa" href="${wa}" target="_blank" rel="noopener" title="Abrir no WhatsApp">${esc(p.numero)} ↗</a>`:esc(p.numero)) : '—'}</td>
       <td>${fmtDate(p.data)}${p.followupEm?`<div class="company" title="Follow-up enviado">↩︎ follow-up ${fmtDate(p.followupEm.slice(0,10))}</div>`:''}</td>
