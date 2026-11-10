@@ -144,6 +144,11 @@ document.getElementById('prospMercado').onclick=e=>{
   prospMercado = b.dataset.mercado; try{ localStorage.setItem('prospMercado', prospMercado); }catch(err){}
   prospLimit = 50; renderProspects();
 };
+document.getElementById('prospPais').onclick=e=>{
+  const b = e.target.closest('button[data-pais]'); if(!b || b.dataset.pais===prospPais) return;
+  prospPais = b.dataset.pais; try{ localStorage.setItem('prospPais', prospPais); }catch(err){}
+  prospLimit = 50; renderProspects();
+};
 document.getElementById('prospMoreBtn').onclick=()=>{ prospLimit+=100; renderProspects(); };
 document.getElementById('importProspBtn').onclick=()=>document.getElementById('importProspFile').click();
 document.getElementById('importProspFile').onchange=async e=>{
