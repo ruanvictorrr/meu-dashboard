@@ -103,6 +103,9 @@ function renderHorarios(){
       <ul>${agenda}</ul>
       <a class="hor-link" href="${PLANILHA_HORARIOS}" target="_blank" rel="noopener">Planilha de horários ↗</a>
     </div>`;
+  // a lista desliza: deixa à vista a janela de agora (ou a próxima que ainda não passou)
+  const ul = el.querySelector('.hor-hoje ul'), alvo = ul && (ul.querySelector('li.ativo') || ul.querySelector('li:not(.passou)'));
+  if(alvo) ul.scrollTop = Math.max(0, alvo.getBoundingClientRect().top - ul.getBoundingClientRect().top - 8);
 }
 
 /* ---------- Selo no lead ---------- */
