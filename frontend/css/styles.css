@@ -292,3 +292,7 @@ dialog h3{margin:0 0 16px;font-size:17px}
 .agenda-linha button.link{all:unset;cursor:pointer;color:var(--c2);font-weight:600}
 .agenda-linha button.link:hover{text-decoration:underline}
 .agenda-linha button.link:focus-visible{outline:2px solid var(--c2);outline-offset:2px;border-radius:4px}
+
+/* Custos e margem (aba Preços) */
+.preco-tbl tr.sep td{background:var(--surface-2);color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding-top:6px;padding-bottom:6px}
+.preco-tbl .muted{color:var(--muted)}

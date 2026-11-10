@@ -26,6 +26,10 @@ const PRECOS_PADRAO = {
     {id:'pac-completo',    nome:'Completo',    tier:'High',  itens:['site-high','bot-high','auto-high','dash-high'], implantacao:17997, mensal:1497},
   ],
   descontoMax: {Low:.10, 'Médio':.10, High:.15, pacote:.05},
+  // custos reais, para ver a margem (aba Preços → "Custos e margem"). Vazio = ainda não sabe.
+  //   hora: quanto vale 1 hora sua · por serviço: horas de implantação, c1 = custo/mês no 1º ano, c2 = custo/mês depois
+  //   Site: hospedagem Hostinger BR ~R$ 40 no 1º ano + domínio .com.br ~R$ 40/ano ≈ R$ 7/mês; a renovação é mais cara (a confirmar).
+  custos: {hora:0, servicos:{'site-low':{c1:7}, 'site-med':{c1:7}, 'site-high':{c1:7}}},
   // clientes do exterior: mesma estrutura do Brasil, com preços em dólar (usd) e em euro (eur).
   // Mesma regra: só código ≈ 70% do completo; preços de entrada até ter 3 a 5 clientes de fora.
   exterior: {
@@ -56,10 +60,12 @@ const precos = () => state.precos || PRECOS_PADRAO;
 const precosEditaveis = () => {
   const P = state.precos || (state.precos = JSON.parse(JSON.stringify(PRECOS_PADRAO)));
   // dados antigos: sem tabela do exterior, ou no formato velho (faixas): troca pelo padrão e mantém o câmbio
+  if(!P.custos) P.custos = JSON.parse(JSON.stringify(PRECOS_PADRAO.custos));
   if(!P.exterior?.servicos) P.exterior = {...JSON.parse(JSON.stringify(PRECOS_PADRAO.exterior)), cambio:{...PRECOS_PADRAO.exterior.cambio, ...(P.exterior?.cambio||{})}};
   return P;
 };
 const exterior = () => { const X = precos().exterior; return X?.servicos ? {...X, cambio:{...PRECOS_PADRAO.exterior.cambio, ...X.cambio}} : {...PRECOS_PADRAO.exterior, cambio:{...PRECOS_PADRAO.exterior.cambio, ...(X?.cambio||{})}}; };
+const custos = () => precos().custos || PRECOS_PADRAO.custos;
 const piso = (v,desc) => v>0 ? Math.max(0, Math.floor((v*(1-desc)-7)/10)*10+7) : 0;
 const servico = id => precos().servicos.find(s=>s.id===id);
 const avulsoDe = p => p.itens.map(servico).filter(Boolean).reduce((a,s)=>({imp:a.imp+s.completo, men:a.men+s.mensal}),{imp:0,men:0});
@@ -225,6 +231,48 @@ function renderPrecos(){
           return `<div class="hbar"><span>${esc(x.nome)}</span><div class="track"><div style="width:${falta?Math.min(100,(x.m/falta)*100):100}%;background:${TIER_COR[x.tier]}"></div></div><span class="n">${falta ? n+' cliente'+(n!==1?'s':'') : '✓'}</span></div>`; }).join('');
 
   document.getElementById('precoReset').style.display = state.precos ? '' : 'none';
+  renderCustos(T);
+}
+
+/* ---- Custos e margem (só Brasil, em reais) ----
+   Implantação: horas × valor da sua hora, comparado com o preço completo.
+   Mensal: custo do 1º ano e de depois (hospedagem renova mais cara), comparado com a mensalidade. */
+function renderCustos(T){
+  const card = document.getElementById('precoCustosCard'); if(!card) return;
+  card.hidden = T.ext; if(T.ext) return;
+  const C = custos(), P = precos(), hora = C.hora||0;
+  const cs = id => C.servicos?.[id] || {};
+  const fil = x => !precoTier || x.tier===precoTier;
+  const custoIn = (id,campo,v,ph) => `<input class="price-in" data-custo="${id}.${campo}" inputmode="decimal" value="${v!=null && v!=='' ? Number(v).toLocaleString('pt-BR',{maximumFractionDigits:2}) : ''}" placeholder="${ph||'—'}">`;
+  const margem = (preco,custo) => custo==null ? '<span class="muted">—</span>'
+    : `<b class="${preco-custo<0?'neg':'pos'}">${brl(preco-custo)}</b>${preco>0?`<div class="company">${Math.round((preco-custo)/preco*100)}%</div>`:''}`;
+  const temNum = v => v!=null && v!=='' && !isNaN(v);
+  // custo de um conjunto de serviços (um serviço ou os itens de um pacote)
+  const soma = ids => {
+    const xs = ids.map(id=>cs(id));
+    const horas = xs.every(x=>temNum(x.horas)) ? xs.reduce((a,x)=>a+ +x.horas,0) : null;
+    const c1 = xs.every(x=>temNum(x.c1)) ? xs.reduce((a,x)=>a+ +x.c1,0) : null;
+    const c2 = c1==null ? null : xs.reduce((a,x)=>a+ +(temNum(x.c2) ? x.c2 : x.c1),0);
+    return {horas, imp: horas!=null && hora ? horas*hora : null, c1, c2};
+  };
+  const linha = (nome,sub,tier,preco,mensal,k,inputs) => `<tr>
+    <td><div class="name">${nome}</div><div class="company">${sub}</div></td>
+    <td>${tierTag(tier)}</td>
+    <td class="num">${inputs.horas}</td>
+    <td class="num">${k.imp==null ? '<span class="muted">—</span>' : brl(k.imp)}</td>
+    <td class="num">${margem(preco,k.imp)}</td>
+    <td class="num">${inputs.c1}</td>
+    <td class="num">${inputs.c2}</td>
+    <td class="num">${margem(mensal,k.c1)}${k.c2!=null && k.c2!==k.c1 ? `<div class="company">depois: <b class="${mensal-k.c2<0?'neg':''}">${brl(mensal-k.c2)}</b></div>` : ''}</td></tr>`;
+  const sv = P.servicos.filter(fil).map(s=>{ const x = cs(s.id), k = soma([s.id]);
+    return linha(esc(s.nome), `${brl(s.completo)} + ${brl(s.mensal)}/mês`, s.tier, s.completo, s.mensal, k,
+      {horas:custoIn(s.id,'horas',x.horas,'h'), c1:custoIn(s.id,'c1',x.c1), c2:custoIn(s.id,'c2',x.c2,'= 1º ano')}); });
+  const pc = P.pacotes.filter(fil).map(p=>{ const k = soma(p.itens), v = n => n==null ? '<span class="muted">—</span>' : n.toLocaleString('pt-BR',{maximumFractionDigits:1});
+    return linha(`Pacote ${esc(p.nome)}`, `${brl(p.implantacao)} + ${brl(p.mensal)}/mês · soma dos serviços`, p.tier, p.implantacao, p.mensal, k,
+      {horas:v(k.horas)+(k.horas!=null?' h':''), c1:k.c1==null?v(null):brl(k.c1), c2:k.c2==null?v(null):brl(k.c2)}); });
+  document.getElementById('precoCustos').innerHTML = sv.join('') + (pc.length ? `<tr class="sep"><td colspan="8">Pacotes</td></tr>${pc.join('')}` : '');
+  const hIn = document.getElementById('precoHora');
+  if(hIn!==document.activeElement) hIn.value = hora ? hora.toLocaleString('pt-BR',{maximumFractionDigits:2}) : '';
 }
 
 document.getElementById('view-precos').addEventListener('change', e=>{
@@ -234,6 +282,13 @@ document.getElementById('view-precos').addEventListener('change', e=>{
     let o = precosEditaveis(); for(const k of ks) o = o[k];
     o[campo] = parseMoney(el.value);
     save(); render(); toast('Preço atualizado');
+  }
+  if(el.dataset.custo || el.id==='precoHora'){
+    const C = precosEditaveis().custos, txt = el.value.trim(), v = txt==='' ? null : parseMoney(txt);
+    if(el.id==='precoHora') C.hora = v||0;
+    else { const [id,campo] = el.dataset.custo.split('.'); C.servicos = C.servicos||{}; const o = C.servicos[id] = C.servicos[id]||{};
+      if(v==null) delete o[campo]; else o[campo] = v; }
+    save(); render(); toast('Custo atualizado');
   }
   if(el.dataset.cambio){
     const v = parseFloat(el.value.replace(/\./g,'').replace(',','.'));
