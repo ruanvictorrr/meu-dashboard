@@ -99,7 +99,7 @@ function pisoAviso(el, info, valor){
 }
 
 /* ---- Tela Preços ---- */
-const tierTag = t => `<span class="tier-tag" style="--tc:${TIER_COR[t]}">${t}</span>`;
+const tierTag = (t,T) => `<span class="tier-tag" style="--tc:${TIER_COR[t]}">${esc(T ? trTier(t,T) : t)}</span>`;
 const precoIn = (path,v) => `<input class="price-in" data-preco="${path}" inputmode="decimal" value="${v ? v.toLocaleString('pt-BR',{maximumFractionDigits:2}) : ''}" placeholder="—">`;
 let precoTier = '';
 // Brasil ou exterior, e dólar ou euro: lembra a escolha neste navegador
@@ -107,6 +107,7 @@ const lerPref = (k,ok,pad) => { try{ const v = localStorage.getItem(k); return o
 const gravarPref = (k,v) => { try{ localStorage.setItem(k,v); }catch(e){} };
 let precoMercado = lerPref('precoMercado',['br','ext'],'br');
 let precoMoeda = lerPref('precoMoeda',['usd','eur'],'usd');
+let precoIdioma = lerPref('precoIdioma',['pt','en','es'],'pt');
 
 // a tabela que está na tela: Brasil (R$) ou exterior na moeda escolhida
 function tabelaAtual(){
@@ -124,6 +125,43 @@ function tabelaAtual(){
     cambio: X.cambio[m], ext: true, moeda: m,
   };
 }
+// idioma dos nomes na tabela do exterior (só muda a exibição; os dados continuam em português)
+const IDIOMAS = {
+  en: {
+    nomes: {Site:'Website', Chatbot:'Chatbot', 'Automações':'Automations', Dashboard:'Dashboard',
+            'Presença':'Presence', Crescimento:'Growth', Completo:'Complete'},
+    tiers: {Low:'Basic', 'Médio':'Standard', High:'Premium'},
+    desc: {
+      'site-low':'1-page landing page', 'site-med':'Up to 5 pages + online booking', 'site-high':'Full website, blog or store, SEO',
+      'bot-low':'Menu with quick replies and handoff to a human', 'bot-med':'AI trained on your business data (WhatsApp, Instagram or website)',
+      'bot-high':'AI connected to calendar and CRM, with multiple agents',
+      'auto-low':'1 simple workflow', 'auto-med':'3 to 5 workflows', 'auto-high':'Entire process automated and integrated',
+      'dash-low':'Simple dashboard with key numbers', 'dash-med':'Web dashboard with 1 or 2 data sources', 'dash-high':'Multiple sources, auto-refresh and user login',
+    },
+    col: {servico:'Service', pacote:'Package', ticket:'Tier', codigo:'Code only', completo:'Full service', mensal:'Monthly',
+          implantacao:'Setup fee', avulso:'Separately', mes:'/mo', desconto:'Discount', piso:'Floor', ano1:'1st year', economia:'1st-year savings'},
+  },
+  es: {
+    nomes: {Site:'Sitio web', Chatbot:'Chatbot', 'Automações':'Automatizaciones', Dashboard:'Panel de control',
+            'Presença':'Presencia', Crescimento:'Crecimiento', Completo:'Completo'},
+    tiers: {Low:'Básico', 'Médio':'Estándar', High:'Premium'},
+    desc: {
+      'site-low':'Landing page de 1 página', 'site-med':'Hasta 5 páginas + reservas online', 'site-high':'Sitio completo, blog o tienda, SEO',
+      'bot-low':'Menú con respuestas rápidas y derivación a una persona', 'bot-med':'IA entrenada con los datos del negocio (WhatsApp, Instagram o web)',
+      'bot-high':'IA conectada a agenda y CRM, con varios agentes',
+      'auto-low':'1 flujo simple', 'auto-med':'3 a 5 flujos', 'auto-high':'Proceso completo automatizado e integrado',
+      'dash-low':'Panel simple con los números principales', 'dash-med':'Panel web con 1 o 2 fuentes de datos', 'dash-high':'Varias fuentes, actualización automática e inicio de sesión',
+    },
+    col: {servico:'Servicio', pacote:'Paquete', ticket:'Nivel', codigo:'Solo código', completo:'Servicio completo', mensal:'Mensual',
+          implantacao:'Implementación', avulso:'Por separado', mes:'/mes', desconto:'Descuento', piso:'Mínimo', ano1:'1.er año', economia:'Ahorro 1.er año'},
+  },
+};
+const COL_PT = {};  // textos originais dos cabeçalhos, lidos do HTML
+document.querySelectorAll('#view-precos th[data-t]').forEach(th=>COL_PT[th.dataset.t]=th.textContent);
+const idiomaAtivo = T => T.ext && IDIOMAS[precoIdioma] || null;
+const trNome = (n,T) => idiomaAtivo(T)?.nomes[n] || n;
+const trDesc = (s,T) => idiomaAtivo(T)?.desc[s.id] || s.desc;
+const trTier = (t,T) => idiomaAtivo(T)?.tiers[t] || t;
 const emReais = (v,T) => T.ext ? `<div class="company">≈ R$ ${(Math.round(v*T.cambio/100)*100).toLocaleString('pt-BR')}</div>` : '';
 
 function renderPrecos(){
@@ -133,14 +171,18 @@ function renderPrecos(){
   document.querySelectorAll('#precoTiers button').forEach(b=>b.classList.toggle('on', b.dataset.tier===precoTier));
   document.querySelectorAll('#precoMercado button').forEach(b=>b.classList.toggle('on', b.dataset.mercado===precoMercado));
   document.querySelectorAll('#precoMoeda button').forEach(b=>b.classList.toggle('on', b.dataset.moeda===precoMoeda));
+  document.querySelectorAll('#precoIdioma button').forEach(b=>b.classList.toggle('on', b.dataset.idioma===precoIdioma));
   document.getElementById('precoMoeda').hidden = !T.ext;
+  document.getElementById('precoIdioma').hidden = !T.ext;
+  const L = idiomaAtivo(T);
+  document.querySelectorAll('#view-precos th[data-t]').forEach(th=>th.textContent = L?.col[th.dataset.t] || COL_PT[th.dataset.t]);
   document.querySelectorAll('#view-precos .preco-ext').forEach(el=>el.hidden = !T.ext);
   document.getElementById('precoServicosTit').textContent = T.ext ? `Serviços · exterior (${T.moeda==='usd'?'dólar':'euro'})` : 'Serviços';
   document.getElementById('precoPacotesTit').textContent = T.ext ? `Pacotes · exterior (${T.moeda==='usd'?'dólar':'euro'})` : 'Pacotes';
 
   document.getElementById('precoServicos').innerHTML = T.servicos.map(s=>!fil(s)?'':`<tr>
-    <td><div class="name">${esc(s.nome)}</div><div class="company">${esc(s.desc)}</div></td>
-    <td>${tierTag(s.tier)}</td>
+    <td><div class="name">${esc(trNome(s.nome,T))}</div><div class="company">${esc(trDesc(s,T))}</div></td>
+    <td>${tierTag(s.tier,T)}</td>
     <td class="num">${precoIn(`${s.path}.codigo`,s.codigo)}</td>
     <td class="num">${precoIn(`${s.path}.completo`,s.completo)}</td>
     <td class="num">${precoIn(`${s.path}.mensal`,s.mensal)}</td>
@@ -152,9 +194,9 @@ function renderPrecos(){
     const a = p.itens.map(sv).filter(Boolean).reduce((a,s)=>({imp:a.imp+s.completo, men:a.men+s.mensal}),{imp:0,men:0});
     const off = a.imp ? 1-p.implantacao/a.imp : 0, eco = (a.imp+12*a.men)-(p.implantacao+12*p.mensal);
     return `<tr>
-    <td><div class="name">${esc(p.nome)}</div><div class="company">${p.itens.map(id=>esc(sv(id)?.nome||id)).join(' + ')}</div></td>
-    <td>${tierTag(p.tier)}</td>
-    <td class="num"><s class="riscado">${$(a.imp)}</s><div class="company"><s>${$(a.men)}/mês</s></div></td>
+    <td><div class="name">${esc(trNome(p.nome,T))}</div><div class="company">${p.itens.map(id=>esc(trNome(sv(id)?.nome||id,T))).join(' + ')}</div></td>
+    <td>${tierTag(p.tier,T)}</td>
+    <td class="num"><s class="riscado">${$(a.imp)}</s><div class="company"><s>${$(a.men)}${L?.col.mes||'/mês'}</s></div></td>
     <td class="num">${precoIn(`${p.path}.implantacao`,p.implantacao)}</td>
     <td class="num">${precoIn(`${p.path}.mensal`,p.mensal)}</td>
     <td class="num">${Math.round(off*100)}%</td>
@@ -216,6 +258,10 @@ document.getElementById('precoMercado').onclick = e=>{
 document.getElementById('precoMoeda').onclick = e=>{
   const b = e.target.closest('button'); if(!b) return;
   precoMoeda = b.dataset.moeda; gravarPref('precoMoeda', precoMoeda); renderPrecos();
+};
+document.getElementById('precoIdioma').onclick = e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  precoIdioma = b.dataset.idioma; gravarPref('precoIdioma', precoIdioma); renderPrecos();
 };
 document.getElementById('precoReset').onclick = ()=>{
   if(!confirm('Voltar todos os preços e limites de desconto para os valores da planilha?')) return;

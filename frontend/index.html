@@ -310,6 +310,7 @@
       <div class="toolbar">
         <div class="seg" id="precoMercado"><button data-mercado="br" class="on">🇧🇷 Brasil</button><button data-mercado="ext">🌍 Exterior</button></div>
         <div class="seg" id="precoMoeda" hidden><button data-moeda="usd" class="on">🇺🇸 Dólar</button><button data-moeda="eur">🇵🇹 Euro</button></div>
+        <div class="seg" id="precoIdioma" hidden title="Idioma dos nomes"><button data-idioma="pt" class="on">PT</button><button data-idioma="en">EN</button><button data-idioma="es">ES</button></div>
         <div class="seg" id="precoTiers"><button data-tier="" class="on">Todos</button><button data-tier="Low">Low</button><button data-tier="Médio">Médio</button><button data-tier="High">High</button></div>
         <button class="btn ghost" id="precoReset" hidden>Restaurar valores da planilha</button>
       </div>
@@ -317,14 +318,14 @@
     <div class="card" style="padding:0;overflow:hidden">
       <div class="card-head"><div><h3 id="precoServicosTit">Serviços</h3><p class="hint" style="margin:0">Clique num valor para editar. Só código = você entrega os arquivos · Completo = publicado, com domínio e configuração.</p></div></div>
       <div style="overflow-x:auto"><table class="preco-tbl">
-        <thead><tr><th>Serviço</th><th>Ticket</th><th class="num">Só código</th><th class="num">Completo</th><th class="num">Mensal</th><th class="num">Piso</th><th class="num">1º ano</th></tr></thead>
+        <thead><tr><th data-t="servico">Serviço</th><th data-t="ticket">Ticket</th><th class="num" data-t="codigo">Só código</th><th class="num" data-t="completo">Completo</th><th class="num" data-t="mensal">Mensal</th><th class="num" data-t="piso">Piso</th><th class="num" data-t="ano1">1º ano</th></tr></thead>
         <tbody id="precoServicos"></tbody>
       </table></div>
     </div>
     <div class="card" style="margin-top:16px;padding:0;overflow:hidden">
       <div class="card-head"><div><h3 id="precoPacotesTit">Pacotes</h3><p class="hint" style="margin:0">O preço avulso (riscado) é a soma dos serviços e muda sozinho quando você edita a tabela acima.</p></div></div>
       <div style="overflow-x:auto"><table class="preco-tbl">
-        <thead><tr><th>Pacote</th><th>Ticket</th><th class="num">Avulso</th><th class="num">Pacote</th><th class="num">Mensal</th><th class="num">Desconto</th><th class="num">Piso</th><th class="num">Economia 1º ano</th></tr></thead>
+        <thead><tr><th data-t="pacote">Pacote</th><th data-t="ticket">Ticket</th><th class="num" data-t="avulso">Avulso</th><th class="num" data-t="implantacao">Pacote</th><th class="num" data-t="mensal">Mensal</th><th class="num" data-t="desconto">Desconto</th><th class="num" data-t="piso">Piso</th><th class="num" data-t="economia">Economia 1º ano</th></tr></thead>
         <tbody id="precoPacotes"></tbody>
       </table></div>
     </div>
