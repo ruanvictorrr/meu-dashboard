@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Junta os leads do exterior numa planilha para o dashboard (Prospecção → 🌍 Exterior).
 
-Lê os bancos dos robôs de e-mail (Portugal e EUA) e a lista de Lisboa sem site e grava
+Puxa do GitHub o estado dos robôs de e-mail (Portugal e EUA), lê o leads.sql de cada um e a lista de Lisboa sem site e grava
 `~/Projetos/Prospecção/Leads do exterior - dashboard.csv`. No dashboard: Prospecção →
 Importar planilha → esse arquivo. Reimportar não duplica e só avança a situação
 (ex.: "A contatar" → "Aguardando resposta" quando o robô manda o e-mail).
 
 Uso: python3 scripts/leads-exterior.py
 """
-import csv, json, sqlite3
+import csv, json, sqlite3, subprocess
 from pathlib import Path
 
 BASE = Path.home() / "Projetos" / "Prospecção"
@@ -29,10 +29,18 @@ COLS = ["Nome", "Nicho", "Telefone", "E-mail", "País", "Cidade", "Bairro", "End
 
 
 def do_robo(pasta, pais, maps_por_email):
-    db = BASE / pasta / "leads.sqlite"
-    if not db.exists():
-        print(f"(sem {db})"); return []
-    con = sqlite3.connect(db); con.row_factory = sqlite3.Row
+    # o estado mais novo é o leads.sql que o robô da nuvem commita: puxa do GitHub e lê ele
+    repo = BASE / pasta
+    r = subprocess.run(["git", "-C", str(repo), "pull", "-q", "--ff-only"], capture_output=True, text=True)
+    if r.returncode: print(f"(não consegui atualizar {pasta} do GitHub, uso a cópia local)")
+    sql, db = repo / "leads.sql", repo / "leads.sqlite"
+    if sql.exists():
+        con = sqlite3.connect(":memory:"); con.executescript(sql.read_text(encoding="utf-8"))
+    elif db.exists():
+        con = sqlite3.connect(db)
+    else:
+        print(f"(sem {sql})"); return []
+    con.row_factory = sqlite3.Row
     out = []
     for r in con.execute("select * from leads order by ordem, id"):
         estado = r["estado"]
