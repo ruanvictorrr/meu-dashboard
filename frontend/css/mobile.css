@@ -127,6 +127,8 @@ nav.tabs .ti, nav.tabs .ts, .fab{display:none}
   .rt-prosp td:nth-child(6){grid-column:1/-1;grid-row:4}
   .rt-prosp td:nth-child(7){grid-column:1/-1;grid-row:5}
   .rt-prosp .obs{max-width:none;margin-top:4px}
+  .rt-prosp .prosp-acoes{max-width:none;width:100%;justify-content:flex-start;gap:6px}
+  .rt-prosp .prosp-email{max-width:100%}
   .rt-prosp .company{margin-top:2px}
   .rt-prosp td:nth-child(3) .wa{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;background:var(--green-soft);font-size:14px;white-space:nowrap}
   .rt-prosp .obs.vazio{display:none}
