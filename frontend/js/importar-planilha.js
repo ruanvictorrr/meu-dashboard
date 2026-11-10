@@ -71,10 +71,13 @@ function rowsToLeads(rows, fileName){
   if(hi<0) throw new Error('Não achei a coluna "Nome" na planilha.');
   const head = rows[hi].cells.map(c=>normName(c));
   const col = (...names) => head.findIndex(h=>names.some(n=>h===n || h.startsWith(n)));
-  const C = {nome:col('nome','empresa'), bairro:col('bairro'), tel:col('telefone','fone','numero','celular'), wa:col('whatsapp','wpp','zap'),
+  const C = {nome:col('nome','empresa'), bairro:col('bairro','zona'), email:col('e-mail','email'), pais:col('pais'), site:col('site'), demo:col('demo'),
+    problemas:col('problemas'), falaPt:col('fala_pt','fala pt'), tel:col('telefone','fone','numero','celular'), wa:col('whatsapp','wpp','zap'),
     cat:col('categoria'), nicho:col('nicho','segmento'), end:col('endereco'), maps:col('google maps','maps','mapa'),
     obs:col('obs','observ'), sit:col('situacao','status'), data:col('data'), cidade:col('cidade','municipio')};
   const fileNiche = /dentist|odonto/i.test(fileName) ? 'Dentista' : '';
+  const filePais = /lisboa|portugal|porto\b/i.test(fileName) ? 'Portugal' : /\beua\b|usa\b|estados unidos/i.test(fileName) ? 'EUA' : '';
+  const fileCidade = /recife/i.test(fileName) ? 'Recife' : /lisboa/i.test(fileName) ? 'Lisboa' : '';
   const leads = [];
   for(let i=hi+1;i<rows.length;i++){
     const r = rows[i].cells, get = k => C[k]>=0 ? String(r[C[k]]||'').trim() : '';
@@ -82,38 +85,48 @@ function rowsToLeads(rows, fileName){
     if(!nome && !get('tel') && !get('wa')) { if(leads.length) break; else continue; } // linha vazia = fim da lista
     let waNum = phoneKey(get('wa')); const telNum = phoneKey(get('tel'));
     if(waNum.length < 10) waNum = '';                              // link de WhatsApp quebrado: usa o telefone
-    if(!nome || (!waNum && !telNum)) continue;                     // ex.: linhas de cálculo
+    const email = /@/.test(get('email')) ? get('email') : '';
+    if(!nome || (!waNum && !telNum && !email)) continue;           // ex.: linhas de cálculo
+    // país: coluna "País", senão pelo DDI do telefone (+351, +1…), senão pelo nome do arquivo
+    const telRaw = get('tel'), ddi = (telRaw.match(/^\s*\+\s*(\d+)/)||[])[1] || '';
+    let pais = get('pais') || (ddi && !ddi.startsWith('55') ? (ddi.startsWith('351') ? 'Portugal' : ddi.startsWith('1') ? 'EUA' : 'Exterior') : '') || filePais;
+    if(ehBrasil(pais)) pais = '';
     let situacao = 'a_contatar', obsExtra = '';
     const txt = normName(get('sit'));
     if(txt){ const m = SITS.find(x=>normName(x.label)===txt || x.k===txt); if(m) situacao = m.k; }
     else { const c = colorToSit(rows[i].color); if(c){ situacao = c.split(':')[0]; if(c.endsWith(':azul')) obsExtra = 'Marcado em azul na planilha (contato conhecido).'; } }
     let nicho = get('nicho');
     if(!nicho){ const cat = get('cat'); nicho = fileNiche || (/dentist|odonto/i.test(cat) ? 'Dentista' : cat); }
+    if(/^dentist/i.test(nicho)) nicho = 'Dentista';
     nicho = nichoCorreto(nicho, nome);
-    const numero = fmtPhone(waNum || telNum);
-    const obs = [get('obs'), obsExtra, (telNum && waNum && telNum!==waNum) ? `Tel.: ${fmtPhone(telNum)}` : ''].filter(Boolean).join(' ');
+    // número do exterior fica no formato internacional (+351 …); o do Brasil, no formato (81) 9…
+    const numero = pais ? (telRaw.trim().startsWith('+') ? telRaw.trim() : (waNum||telNum) ? '+'+(waNum||telNum) : '') : fmtPhone(waNum || telNum);
+    const obs = [get('obs'), obsExtra, get('problemas') && !get('obs') ? `Site: ${get('problemas')}.` : '', /^(sim|s|yes)$/i.test(get('falaPt')) ? 'Atende em português.' : '', (telNum && waNum && telNum!==waNum) ? `Tel.: ${fmtPhone(telNum)}` : ''].filter(Boolean).join(' ');
     let data = '';
     const dRaw = get('data'); const dm = dRaw.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
     if(dm) data = `${dm[3].length===2?'20'+dm[3]:dm[3]}-${dm[2].padStart(2,'0')}-${dm[1].padStart(2,'0')}`;
-    leads.push({nome, nicho, numero, bairro:get('bairro').replace(/\s*\(aprox\.?\)/i,''), cidade:get('cidade') || (/recife/i.test(fileName)?'Recife':''), endereco:get('end'), maps:get('maps'), obs, situacao, data, ordem:i});
+    else if(/^\d{4}-\d{2}-\d{2}/.test(dRaw)) data = dRaw.slice(0,10);
+    const site = /^https?:\/\//i.test(get('site')) ? get('site') : '', demo = /^https?:\/\//i.test(get('demo')) ? get('demo') : '';
+    leads.push({nome, nicho, numero, bairro:get('bairro').replace(/\s*\(aprox\.?\)/i,''), cidade:get('cidade') || fileCidade, endereco:get('end'), maps:get('maps'), obs, situacao, data, ordem:i,
+      ...(pais ? {pais} : {}), ...(email ? {email} : {}), ...(site ? {site} : {}), ...(demo ? {demo} : {})});
   }
   return leads;
 }
 
 function mergeLeads(leads){
   const t = today(); let novos=0, atualizados=0, iguais=0;
-  const byPhone = new Map(), byName = new Map();
-  state.prospects.forEach(p=>{ const k=phoneKey(p.numero); if(k) byPhone.set(k,p); byName.set(normName(p.nome),p); });
+  const byPhone = new Map(), byName = new Map(), byEmail = new Map();
+  state.prospects.forEach(p=>{ const k=phoneKey(p.numero); if(k) byPhone.set(k,p); if(p.email) byEmail.set(p.email.toLowerCase(),p); byName.set(normName(p.nome),p); });
   leads.forEach(l=>{
     const k = phoneKey(l.numero), byN = byName.get(normName(l.nome));
-    const ex = (k && byPhone.get(k)) || (byN && (!k || !phoneKey(byN.numero)) ? byN : null);
+    const ex = (k && byPhone.get(k)) || (l.email && byEmail.get(l.email.toLowerCase())) || (byN && (!k || !phoneKey(byN.numero)) ? byN : null);
     if(!ex){
       const np = {id:uid(), ...l, maps: l.maps || mapsBusca(l), data: l.data || (l.situacao==='a_contatar' ? '' : t), atualizado:new Date().toISOString(), origem:'planilha'};
-      state.prospects.push(np); if(k) byPhone.set(k,np); byName.set(normName(l.nome),np);
+      state.prospects.push(np); if(k) byPhone.set(k,np); if(l.email) byEmail.set(l.email.toLowerCase(),np); byName.set(normName(l.nome),np);
       novos++; return;
     }
     // completa dados que faltam
-    ['bairro','cidade','endereco','nicho'].forEach(k=>{ if(!ex[k] && l[k]) ex[k]=l[k]; });
+    ['bairro','cidade','endereco','nicho','pais','email','site','demo'].forEach(k=>{ if(!ex[k] && l[k]) ex[k]=l[k]; });
     ex.maps = mapsMelhor(ex.maps, l.maps);
     if(l.obs && !(ex.obs||'').includes(l.obs)) ex.obs = [ex.obs,l.obs].filter(Boolean).join(' ');
     // a planilha só muda a situação se não for "voltar para trás" (ex.: branco nunca desfaz um contato)
@@ -132,8 +145,13 @@ async function importProspectFile(file){
   if(!leads.length) throw new Error('Nenhum contato encontrado na planilha.');
   const resumo = SITS.map(x=>[x.label, leads.filter(l=>l.situacao===x.k).length]).filter(x=>x[1]).map(x=>`• ${x[0]}: ${x[1]}`).join('\n');
   const aviso = isX ? '' : '\n\n(Arquivo .csv não guarda cores: para ler as cores, baixe a planilha como .xlsx.)';
-  if(!confirm(`Encontrei ${leads.length} contatos em "${file.name}":\n\n${resumo}${aviso}\n\nImportar? Quem já está no dashboard não é duplicado, só tem a situação atualizada.`)) return;
+  const nFora = leads.filter(l=>l.pais).length;
+  if(!confirm(`Encontrei ${leads.length} contatos${nFora ? ` (${nFora===leads.length?'todos':nFora} do exterior)` : ''} em "${file.name}":\n\n${resumo}${aviso}\n\nImportar? Quem já está no dashboard não é duplicado, só tem a situação atualizada.`)) return;
   const r = mergeLeads(leads); dedupeProspects(state);
+  // planilha só com leads do exterior: abre a Prospecção já no "Exterior"
+  const nExt = leads.filter(l=>l.pais).length;
+  if(nExt && nExt===leads.length){ prospMercado = 'ext'; try{ localStorage.setItem('prospMercado','ext'); }catch(e){} }
+  else if(!nExt){ prospMercado = 'br'; try{ localStorage.setItem('prospMercado','br'); }catch(e){} }
   save(); render();
   toast(`Importado: ${r.novos} novos · ${r.atualizados} atualizados · ${r.iguais} sem mudança`);
 }

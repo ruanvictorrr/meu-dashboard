@@ -146,7 +146,13 @@ function renderVariable(){
   document.querySelectorAll('.client-select').forEach(sel=>{ const val=sel.value; sel.innerHTML=opts; sel.value=val; });
 }
 
-const waLink = n => { let d = String(n||'').replace(/\D/g,''); if(!d) return ''; if(d.length<=11) d = '55'+d; return 'https://wa.me/'+d; };
+const waLink = n => { const s = String(n||'').trim(); let d = s.replace(/\D/g,''); if(!d) return ''; if(!s.startsWith('+') && d.length<=11) d = '55'+d; return 'https://wa.me/'+d; };
+/* Brasil x exterior: lead sem país (ou "Brasil") é nacional; o resto é do exterior */
+const ehBrasil = s => !s || /^(br|brasil|brazil)$/i.test(String(s).trim());
+const mercadoDe = p => ehBrasil(p.pais) ? 'br' : 'ext';
+const BANDEIRAS = {portugal:'🇵🇹', eua:'🇺🇸', 'estados unidos':'🇺🇸', usa:'🇺🇸', espanha:'🇪🇸', 'reino unido':'🇬🇧', canada:'🇨🇦', franca:'🇫🇷', italia:'🇮🇹', alemanha:'🇩🇪', irlanda:'🇮🇪'};
+const bandeira = pais => BANDEIRAS[String(pais||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim()] || '🌍';
+let prospMercado = (()=>{ try{ return localStorage.getItem('prospMercado')==='ext' ? 'ext' : 'br'; }catch(e){ return 'br'; } })();
 const today = () => new Date().toLocaleDateString('sv-SE');
 let prospLimit = 50;
 // ordenação da tabela de contatos (clique no cabeçalho): k = coluna, dir 1 = crescente, -1 = decrescente
@@ -183,15 +189,25 @@ function dateOk(d){
   return true;
 }
 // select fixo de nicho, com a quantidade de leads em cada um
-function prospNichoOptions(){
+function prospNichoOptions(lista){
   const sel = document.getElementById('prospNicho'), counts = {};
-  state.prospects.forEach(p=>{ const v = (p.nicho||'').trim(); if(v) counts[v]=(counts[v]||0)+1; });
+  lista.forEach(p=>{ const v = (p.nicho||'').trim(); if(v) counts[v]=(counts[v]||0)+1; });
   const cur = sel.value;
   sel.innerHTML = '<option value="">Todos os nichos</option>' + Object.keys(counts).sort((a,b)=>a.localeCompare(b,'pt-BR')).map(v=>`<option value="${esc(v)}">${esc(v)} (${counts[v]})</option>`).join('');
   sel.value = counts[cur] ? cur : '';
 }
 function renderProspects(){
-  const all = state.prospects;
+  // botão Brasil / Exterior: tudo na aba (KPIs, funil, nicho e lista) olha só o mercado escolhido
+  const ext = prospMercado==='ext';
+  const nMerc = {br:0, ext:0}; state.prospects.forEach(p=>nMerc[mercadoDe(p)]++);
+  document.querySelectorAll('#prospMercado button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.mercado===prospMercado);
+    b.textContent = (b.dataset.mercado==='br' ? '🇧🇷 Brasil' : '🌍 Exterior') + (nMerc[b.dataset.mercado] ? ` · ${nMerc[b.dataset.mercado]}` : '');
+  });
+  // horário de WhatsApp e resposta por horário são da prospecção no Brasil
+  document.getElementById('prospAgora').style.display = ext ? 'none' : '';
+  document.getElementById('prospResp').style.display = ext ? 'none' : '';
+  const all = state.prospects.filter(p=>mercadoDe(p)===prospMercado);
   const count = k => all.filter(p=>p.situacao===k).length;
   const contacted = all.filter(p=>p.situacao!=='a_contatar');
   const won = count('fechou'), lost = count('perdeu'), noAns = count('sem_resposta');
@@ -229,7 +245,7 @@ function renderProspects(){
     fsel.value = 'contacted';
   }
   const f = fsel.value;
-  prospNichoOptions();
+  prospNichoOptions(all);
   const nicho = document.getElementById('prospNicho').value;
   // opções do "Filtrar por" quando é bairro/cidade
   const field = document.getElementById('prospField').value, vsel = document.getElementById('prospValue');
@@ -280,18 +296,19 @@ function renderProspects(){
     const isClient = p.clienteId && state.clients.some(c=>c.id===p.clienteId);
     const addr = [[p.bairro,p.cidade].filter(Boolean).join(', '),p.endereco].filter(Boolean).join(' · ');
     const maps = p.maps || mapsBusca(p);
+    const links = [p.site ? `<a class="wa" style="color:var(--muted)" href="${esc(p.site)}" target="_blank" rel="noopener">site atual ↗</a>` : '', p.demo ? `<a class="wa" href="${esc(p.demo)}" target="_blank" rel="noopener">demo ↗</a>` : ''].filter(Boolean).join(' · ');
     return `<tr>
-      <td style="white-space:normal;min-width:220px"><div class="name">${esc(p.nome)}</div>${maps?`<div class="company"><a class="wa" style="color:var(--muted)" href="${esc(maps)}" target="_blank" rel="noopener" title="Abrir no Google Maps">📍 ${esc(addr||'Ver no Google Maps')}</a></div>`:addr?`<div class="company">${esc(addr)}</div>`:''}${agendaLinha(p)}</td>
-      <td>${esc(p.nicho||'—')}${seloHorario(p)}</td>
-      <td>${p.numero ? (wa?`<a class="wa" href="${wa}" target="_blank" rel="noopener" title="Abrir no WhatsApp">${esc(p.numero)} ↗</a>`:esc(p.numero)) : '—'}</td>
+      <td style="white-space:normal;min-width:220px"><div class="name">${ext ? `<span title="${esc(p.pais||'')}">${bandeira(p.pais)}</span> ` : ''}${esc(p.nome)}</div>${links?`<div class="company">${links}</div>`:''}${maps?`<div class="company"><a class="wa" style="color:var(--muted)" href="${esc(maps)}" target="_blank" rel="noopener" title="Abrir no Google Maps">📍 ${esc(addr||'Ver no Google Maps')}</a></div>`:addr?`<div class="company">${esc(addr)}</div>`:''}${agendaLinha(p)}</td>
+      <td>${esc(p.nicho||'—')}${ext ? '' : seloHorario(p)}</td>
+      <td>${p.numero ? (wa?`<a class="wa" href="${wa}" target="_blank" rel="noopener" title="Abrir no WhatsApp">${esc(p.numero)} ↗</a>`:esc(p.numero)) : (p.email ? '' : '—')}${p.email?`<div class="company"><a class="wa" style="color:var(--muted)" href="mailto:${esc(p.email)}">✉︎ ${esc(p.email)}</a></div>`:''}</td>
       <td>${fmtDate(p.data)}${p.followupEm?`<div class="company" title="Follow-up enviado">↩︎ follow-up ${fmtDate(p.followupEm.slice(0,10))}</div>`:''}</td>
       <td><select class="sit-select ${st.cls}" data-sit="${p.id}" aria-label="Situação">${SITS.map(x=>`<option value="${x.k}" ${x.k===p.situacao?'selected':''}>${x.label}</option>`).join('')}</select></td>
       <td><div class="obs${p.obs?'':' vazio'}" title="${esc(p.obs||'')}">${esc(p.obs||'—')}</div></td>
       <td style="text-align:right">${p.situacao==='fechou' ? (isClient?'<span class="badge ok">É cliente</span>':`<button class="btn sm" data-to-client="${p.id}">Virar cliente</button>`) : ''}${p.situacao!=='a_contatar'?`<button class="btn sm ghost" data-agendar="${p.id}" title="Marcar chamada, visita ou follow-up no Google Agenda">📅 ${agendaAtiva(p)?'Reagendar':'Agendar'}</button>`:''}<button class="btn sm ghost" data-edit-prosp="${p.id}">Editar</button><button class="btn sm ghost danger" data-del-prosp="${p.id}">Excluir</button></td>
     </tr>`;}).join('')
-    : `<tr><td colspan="7" class="empty">${all.length?'Nada encontrado com esse filtro.':'Nenhuma prospecção ainda. Clique em <b>+ Nova prospecção</b> ou <b>Importar planilha</b>.'}</td></tr>`;
+    : `<tr><td colspan="7" class="empty">${all.length?'Nada encontrado com esse filtro.':ext?'Nenhum lead do exterior ainda. Use <b>Importar planilha</b> com a lista de Lisboa/EUA ou cadastre um lead com o país preenchido.':'Nenhuma prospecção ainda. Clique em <b>+ Nova prospecção</b> ou <b>Importar planilha</b>.'}</td></tr>`;
 
-  renderHorarios(); renderRespostas();
+  if(!ext){ renderHorarios(); renderRespostas(); }
   const nichos = [...new Set([...NICHOS,...all.map(p=>p.nicho).filter(Boolean)])];
   document.getElementById('nichoList').innerHTML = nichos.map(n=>`<option value="${esc(n)}">`).join('');
 }
