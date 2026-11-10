@@ -145,6 +145,9 @@ dialog h3{margin:0 0 16px;font-size:17px}
 .filter-by input,.filter-by #prospValue,.filter-by .fb-pick{width:200px}
 .filter-by :focus{outline:none}
 .filter-by:focus-within{outline:2px solid var(--accent);outline-offset:-1px}
+/* lista de contatos cabe sem deslizar: e-mail longo corta com "…" e os botões quebram linha */
+.prosp-email{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prosp-acoes{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;min-width:210px;max-width:250px;margin-left:auto}
 .rt-prosp th[data-sort]{cursor:pointer;user-select:none;white-space:nowrap}
 .rt-prosp th[data-sort]:hover,.rt-prosp th.sorted{color:var(--text)}
 .rt-prosp th[data-sort]::after{content:attr(data-arrow);margin-left:4px;color:var(--accent)}
