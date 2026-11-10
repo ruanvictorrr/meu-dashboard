@@ -302,6 +302,13 @@ document.getElementById('view-precos').addEventListener('change', e=>{
     save(); render(); toast('Limite de desconto atualizado');
   }
 });
+// "Custos e margem" abre e fecha (começa fechado; lembra a escolha neste navegador)
+(()=>{
+  const btn = document.getElementById('precoCustosToggle'), corpo = document.getElementById('precoCustosCorpo');
+  const aplicar = aberto => { corpo.hidden = !aberto; btn.setAttribute('aria-expanded', aberto); btn.textContent = aberto ? 'Esconder ▴' : 'Mostrar ▾'; };
+  aplicar(lerPref('precoCustosAberto',['1','0'],'0')==='1');
+  btn.onclick = ()=>{ const aberto = corpo.hidden; aplicar(aberto); gravarPref('precoCustosAberto', aberto?'1':'0'); };
+})();
 document.getElementById('precoTiers').onclick = e=>{
   const b = e.target.closest('button'); if(!b) return;
   precoTier = b.dataset.tier; renderPrecos();

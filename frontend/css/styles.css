@@ -296,3 +296,4 @@ dialog h3{margin:0 0 16px;font-size:17px}
 /* Custos e margem (aba Preços) */
 .preco-tbl tr.sep td{background:var(--surface-2);color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding-top:6px;padding-bottom:6px}
 .preco-tbl .muted{color:var(--muted)}
+.custos-topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:0 18px 12px}
