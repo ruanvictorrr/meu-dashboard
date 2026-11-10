@@ -79,12 +79,16 @@ function openProsp(id){
   document.getElementById('prospDlgTitle').textContent = p ? 'Editar prospecção' : 'Nova prospecção';
   f.id.value=p?.id||''; f.nome.value=p?.nome||''; f.nicho.value=p?.nicho||''; f.numero.value=p?.numero||'';
   f.data.value=p ? (p.data||'') : new Date().toLocaleDateString('sv-SE'); f.situacao.value=p?.situacao||'novo'; f.obs.value=p?.obs||''; f.bairro.value=p?.bairro||''; f.cidade.value=p?.cidade||''; f.endereco.value=p?.endereco||''; f.maps.value=p?.maps||'';
+  f.pais.value=p ? (ehBrasil(p.pais) ? '' : p.pais) : ''; f.email.value=p?.email||'';
+  f.pais.placeholder = prospMercado==='ext' ? 'Ex.: Portugal' : 'Brasil';
   prospProdutoPreparar(p);
   prospDlg.showModal(); f.nome.focus();
 }
 document.getElementById('prospForm').addEventListener('submit',e=>{
   const f = e.target;
-  const data = {nome:f.nome.value.trim(), nicho:f.nicho.value.trim(), numero:f.numero.value.trim(), data:f.data.value || (f.situacao.value==='a_contatar' ? '' : today()), situacao:f.situacao.value, obs:f.obs.value.trim(), bairro:f.bairro.value.trim(), cidade:f.cidade.value.trim(), endereco:f.endereco.value.trim(), atualizado:new Date().toISOString(),
+  const data = {nome:f.nome.value.trim(), nicho:f.nicho.value.trim(), numero:f.numero.value.trim(), data:f.data.value || (f.situacao.value==='a_contatar' ? '' : today()), situacao:f.situacao.value, obs:f.obs.value.trim(), bairro:f.bairro.value.trim(), cidade:f.cidade.value.trim(), endereco:f.endereco.value.trim(), email:f.email.value.trim(),
+    // país vazio: fica no mercado que está aberto (no Exterior vira "Exterior")
+    pais:f.pais.value.trim() || (prospMercado==='ext' ? 'Exterior' : ''), atualizado:new Date().toISOString(),
     propostaProduto:f.propostaProduto.value||null, propostaValor:parseMoney(f.propostaValor.value), propostaMensal:parseMoney(f.propostaMensal.value)};
   // link do Maps: o digitado/colado; se ficou vazio ou é a busca automática de antes, refaz a busca com o nome/bairro atuais
   const antigo = f.id.value ? (state.prospects.find(x=>x.id===f.id.value)?.maps||'') : '';
@@ -135,6 +139,11 @@ document.getElementById('prospDate').onchange=e=>{
   prospLimit=50; renderProspects();
 };
 document.getElementById('prospDateDay').onchange=()=>{ prospLimit=50; renderProspects(); };
+document.getElementById('prospMercado').onclick=e=>{
+  const b = e.target.closest('button[data-mercado]'); if(!b || b.dataset.mercado===prospMercado) return;
+  prospMercado = b.dataset.mercado; try{ localStorage.setItem('prospMercado', prospMercado); }catch(err){}
+  prospLimit = 50; renderProspects();
+};
 document.getElementById('prospMoreBtn').onclick=()=>{ prospLimit+=100; renderProspects(); };
 document.getElementById('importProspBtn').onclick=()=>document.getElementById('importProspFile').click();
 document.getElementById('importProspFile').onchange=async e=>{
