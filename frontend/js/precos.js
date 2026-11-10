@@ -85,10 +85,15 @@ function pisoAviso(el, info, valor){
 const tierTag = t => `<span class="tier-tag" style="--tc:${TIER_COR[t]}">${t}</span>`;
 const precoIn = (path,v) => `<input class="price-in" data-preco="${path}" inputmode="decimal" value="${v ? v.toLocaleString('pt-BR',{maximumFractionDigits:2}) : ''}" placeholder="—">`;
 let precoTier = '';
+// Brasil ou exterior: lembra a escolha neste navegador
+let precoMercado = (()=>{ try{ return localStorage.getItem('precoMercado')==='ext' ? 'ext' : 'br'; }catch(e){ return 'br'; } })();
 function renderPrecos(){
   const P = precos(), D = P.descontoMax;
   const fil = x => !precoTier || x.tier===precoTier;
   document.querySelectorAll('#precoTiers button').forEach(b=>b.classList.toggle('on', b.dataset.tier===precoTier));
+  document.querySelectorAll('#precoMercado button').forEach(b=>b.classList.toggle('on', b.dataset.mercado===precoMercado));
+  document.querySelectorAll('#view-precos .preco-br').forEach(el=>el.hidden = precoMercado!=='br');
+  document.querySelectorAll('#view-precos .preco-ext').forEach(el=>el.hidden = precoMercado!=='ext');
 
   document.getElementById('precoServicos').innerHTML = P.servicos.map((s,i)=>!fil(s)?'':`<tr>
     <td><div class="name">${esc(s.nome)}</div><div class="company">${esc(s.desc)}</div></td>
@@ -171,6 +176,12 @@ document.getElementById('view-precos').addEventListener('change', e=>{
 document.getElementById('precoTiers').onclick = e=>{
   const b = e.target.closest('button'); if(!b) return;
   precoTier = b.dataset.tier; renderPrecos();
+};
+document.getElementById('precoMercado').onclick = e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  precoMercado = b.dataset.mercado;
+  try{ localStorage.setItem('precoMercado', precoMercado); }catch(err){}
+  renderPrecos();
 };
 document.getElementById('precoReset').onclick = ()=>{
   if(!confirm('Voltar todos os preços e limites de desconto para os valores da planilha?')) return;

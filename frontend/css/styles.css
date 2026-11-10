@@ -286,3 +286,4 @@ dialog h3{margin:0 0 16px;font-size:17px}
 .desc-lim small{display:block;color:var(--muted);font-size:12px}
 .pct-in{display:inline-flex;align-items:center;gap:4px;font-weight:600}
 .pct-in input{width:56px;text-align:right;padding:6px 9px;border:1px solid var(--border);border-radius:8px;background:var(--bg);font-weight:600}
+#view-precos [hidden]{display:none!important}
