@@ -30,7 +30,9 @@ function renderProximos(){
   const ganhou = P.filter(p=>p.situacao==='fechou' && !(p.clienteId && state.clients.some(c=>c.id===p.clienteId)));
   if(ganhou.length) add('ok','🎉', `Cadastrar ${ganhou.length} novo${ganhou.length>1?'s':''} cliente${ganhou.length>1?'s':''}`, `Deram certo: ${nomes(ganhou)} — use "Virar cliente"`, 'Ver', 'sit:fechou');
   // 4) follow-up de quem não respondeu (dia seguinte, na janela boa do nicho)
-  const fu = P.filter(p=>p.situacao==='aguardando' && diasDesde(p.atualizado)>=1);
+  // fila e follow-up são do Brasil: no exterior quem manda e faz o follow-up é o robô de e-mail
+  const PB = P.filter(p=>mercadoDe(p)==='br');
+  const fu = PB.filter(p=>p.situacao==='aguardando' && diasDesde(p.atualizado)>=1);
   const fimDeSemana = [0,6].includes(new Date().getDay());
   if(fu.length && fimDeSemana){
     // regra combinada: follow-up só em dia útil
@@ -46,7 +48,7 @@ function renderProximos(){
   if(fuSem.length) add('idle','⌛', `Encerrar ${fuSem.length} lead${fuSem.length>1?'s':''} sem resposta ao follow-up`,
     `Follow-up há 3+ dias sem retorno: ${nomes(fuSem)} — marque "Sem resposta"`, 'Ver lista', 'sit:followup');
   // 5) quem contatar agora
-  const fila = P.filter(p=>p.situacao==='a_contatar');
+  const fila = PB.filter(p=>p.situacao==='a_contatar');
   const porNicho = {}; fila.forEach(p=>{ const n=p.nicho||''; porNicho[n]=(porNicho[n]||0)+1; });
   const naJanela = Object.keys(porNicho).filter(n=>n).map(n=>({n, ...horarioAgora(n), q:porNicho[n]})).filter(s=>['bom','ok','fds'].includes(s.nivel))
     .sort((a,b)=>(a.nivel==='bom'?0:1)-(b.nivel==='bom'?0:1) || b.q-a.q);
@@ -85,6 +87,10 @@ function irProspeccao({sit, nicho}={}){
   const field = document.getElementById('prospField'), filt = document.getElementById('prospFilter');
   // sempre parte de um filtro limpo, para não herdar o nicho de um clique anterior
   field.value = 'nome'; field.dispatchEvent(new Event('change'));
+  // abre no mercado certo: nicho/fila são do Brasil; situação vai para onde estão esses leads
+  const casa = p => sit==='open' ? OPEN_SITS.includes(p.situacao) : p.situacao===sit;
+  const merc = !sit || nicho ? 'br' : (state.prospects.some(p=>casa(p) && mercadoDe(p)==='br') ? 'br' : state.prospects.some(casa) ? 'ext' : 'br');
+  if(merc!==prospMercado){ prospMercado = merc; try{ localStorage.setItem('prospMercado', merc); }catch(e){} }
   document.getElementById('prospDate').value = 'any'; document.getElementById('prospDate').dispatchEvent(new Event('change'));
   prospNichoOptions(); document.getElementById('prospNicho').value = nicho || '';
   if(sit) filt.value = sit;

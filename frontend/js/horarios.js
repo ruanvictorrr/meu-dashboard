@@ -54,7 +54,7 @@ const proxTexto = p => !p ? '' : (p.emDias===0 ? 'hoje' : p.emDias===1 ? 'amanh�
 
 /* nichos que aparecem no painel: os da lista + os que têm leads */
 function nichosHorario(){
-  return [...new Set([...NICHOS, ...state.prospects.map(p=>p.nicho).filter(Boolean)])];
+  return [...new Set([...NICHOS, ...state.prospects.filter(p=>mercadoDe(p)==='br').map(p=>p.nicho).filter(Boolean)])];
 }
 const FILA = ['a_contatar'];
 const FOLLOW = ['novo','aguardando'];
@@ -62,9 +62,10 @@ const FOLLOW = ['novo','aguardando'];
 /* ---------- Cartão "Agora é hora de falar com…" ---------- */
 function renderHorarios(){
   const el = document.getElementById('prospAgora'); if(!el) return;
+  if(prospMercado==='ext') return renderHorariosExterior(el);
   const now = new Date(), dia = now.getDay();
   const fila = {}, follow = {};
-  state.prospects.forEach(p=>{ const n=p.nicho||''; if(FILA.includes(p.situacao)) fila[n]=(fila[n]||0)+1; if(FOLLOW.includes(p.situacao)) follow[n]=(follow[n]||0)+1; });
+  state.prospects.filter(p=>mercadoDe(p)==='br').forEach(p=>{ const n=p.nicho||''; if(FILA.includes(p.situacao)) fila[n]=(fila[n]||0)+1; if(FOLLOW.includes(p.situacao)) follow[n]=(follow[n]||0)+1; });
   const nichos = nichosHorario().filter(n => HORARIOS[n] || fila[n] || follow[n]);
   const st = nichos.map(n=>({n, ...horarioAgora(n, now)}));
   const chip = s => {
@@ -104,6 +105,76 @@ function renderHorarios(){
       <a class="hor-link" href="${PLANILHA_HORARIOS}" target="_blank" rel="noopener">Planilha de horários ↗</a>
     </div>`;
   // a lista desliza: deixa à vista a janela de agora (ou a próxima que ainda não passou)
+  const ul = el.querySelector('.hor-hoje ul'), alvo = ul && (ul.querySelector('li.ativo') || ul.querySelector('li:not(.passou)'));
+  if(alvo) ul.scrollTop = Math.max(0, alvo.getBoundingClientRect().top - ul.getBoundingClientRect().top - 8);
+}
+
+/* ---------- Cartão do exterior: as mesmas janelas por nicho, no fuso de cada país ---------- */
+const FUSOS = {portugal:'Europe/Lisbon', eua:'America/New_York', 'estados unidos':'America/New_York', usa:'America/New_York',
+  espanha:'Europe/Madrid', 'reino unido':'Europe/London', irlanda:'Europe/Dublin', franca:'Europe/Paris', italia:'Europe/Rome',
+  alemanha:'Europe/Berlin', canada:'America/Toronto'};
+const CIDADE_FUSO = {lisboa:'Lisboa', 'america/new_york':'Nova York', 'europe/madrid':'Madri', 'europe/london':'Londres', 'europe/dublin':'Dublin',
+  'europe/paris':'Paris', 'europe/rome':'Roma', 'europe/berlin':'Berlim', 'america/toronto':'Toronto', 'europe/lisbon':'Lisboa'};
+const semAcento = t => String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+const fusoDe = pais => FUSOS[semAcento(pais)] || null;
+// relógio de parede no fuso (os getters do Date devolvem a hora de lá) e a diferença para cá, em minutos
+const horaLa = (tz, base=new Date()) => new Date(base.toLocaleString('en-US',{timeZone:tz}));
+const difMin = (tz, base=new Date()) => Math.round((horaLa(tz,base) - new Date(base.toLocaleString('en-US')))/60000);
+const hmAqui = (hm, dif) => { let m = (minutos(hm) - dif) % 1440; if(m<0) m += 1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); };
+function renderHorariosExterior(el){
+  const now = new Date();
+  const grupos = {};   // país+nicho → fila e follow-up
+  state.prospects.filter(p=>mercadoDe(p)==='ext').forEach(p=>{
+    const pais = (p.pais||'Exterior').trim(), tz = fusoDe(pais); if(!tz) return;
+    if(prospPais && pais!==prospPais) return;
+    const n = p.nicho || 'Sem nicho', k = pais+'|'+n;
+    const g = grupos[k] = grupos[k] || {pais, n, tz, fila:0, follow:0};
+    if(FILA.includes(p.situacao)) g.fila++; if(FOLLOW.includes(p.situacao)) g.follow++;   // follow-up do exterior quem faz é o robô: aqui é só "aguardando"
+  });
+  const gs = Object.values(grupos).map(g=>{ const la = horaLa(g.tz, now), dif = difMin(g.tz, now); return {...g, la, dif, ...horarioAgora(g.n, la)}; });
+  if(!gs.length){ el.innerHTML = `<div class="hor-agora"><div class="hor-head"><h3>Agora é hora de falar com…</h3></div><div class="hor-vazio">Preencha o país dos leads do exterior para ver o melhor horário no fuso de cada um.</div></div><div class="hor-hoje"><h3>Hoje</h3><ul></ul></div>`; return; }
+  const cid = g => CIDADE_FUSO[g.tz.toLowerCase()] || g.pais;
+  const relogios = [...new Map(gs.map(g=>[g.tz,g])).values()].map(g=>`${bandeira(g.pais)} ${g.la.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} em ${esc(cid(g))}`).join(' · ');
+  const chip = g => {
+    const det = [g.fila?`${g.fila} na fila`:'', g.follow?`${g.follow} aguardando`:''].filter(Boolean).join(' · ');
+    return `<button type="button" class="hor-chip ${g.nivel}" data-hor-nicho="${esc(g.n)}" data-hor-pais="${esc(g.pais)}" title="Até ${hFmt(g.ate)} de ${esc(cid(g))} (${hFmt(hmAqui(g.ate,g.dif))} aqui) · evitar: ${esc(horDe(g.n).evitar)}"><b>${bandeira(g.pais)} ${esc(g.n)} · ${esc(g.pais)}</b><span>até ${hFmt(hmAqui(g.ate,g.dif))} daqui${det?' · '+det:''}</span></button>`;
+  };
+  const bons = gs.filter(g=>g.nivel==='bom'), oks = gs.filter(g=>g.nivel==='ok'), fds = gs.filter(g=>g.nivel==='fds');
+  let agora;
+  if(bons.length || oks.length || fds.length){
+    agora = (bons.length ? `<div class="hor-grupo"><span class="hor-tag bom">Melhor hora</span>${bons.map(chip).join('')}</div>` : '')
+      + (oks.length ? `<div class="hor-grupo"><span class="hor-tag ok">Dá para mandar</span>${oks.map(chip).join('')}</div>` : '')
+      + (fds.length ? `<div class="hor-grupo"><span class="hor-tag fds">Fim de semana · opcional</span>${fds.map(chip).join('')}</div>` : '');
+  } else {
+    // próxima janela boa, contada no horário daqui
+    const prox = gs.filter(g=>g.prox).map(g=>({g, falta: g.prox.emDias*1440 + minutos(g.prox.ini) - (g.la.getHours()*60+g.la.getMinutes())}))
+      .sort((a,b)=>a.falta-b.falta);
+    agora = `<div class="hor-vazio">Fora do horário bom em todos os países agora.${prox.length ? ' Próximas: ' + prox.slice(0,3).map(({g})=>`<b>${bandeira(g.pais)} ${proxTexto(g.prox)} de ${esc(cid(g))}</b> (${hFmt(hmAqui(g.prox.ini,g.dif))} aqui)`).join(' · ') + '.' : ''}</div>`;
+  }
+  // hoje (no dia de cada país), já convertido para o horário daqui
+  const linhas = [];
+  gs.forEach(g=>{
+    const m = g.la.getHours()*60+g.la.getMinutes();
+    janelasDoDia(g.n, g.la.getDay()).filter(j=>j.nivel!=='ok').forEach(j=>{
+      const passou = minutos(j.fim)<=m, ativo = minutos(j.ini)<=m && !passou;
+      linhas.push({ord: minutos(hmAqui(j.ini,g.dif)), passou, ativo, hora:`${hFmt(hmAqui(j.ini,g.dif))}–${hFmt(hmAqui(j.fim,g.dif))}`,
+        txt:`${bandeira(g.pais)} ${esc(g.n)}`, tip:`${hFmt(j.ini)}–${hFmt(j.fim)} de ${cid(g)}`});
+    });
+  });
+  linhas.sort((a,b)=>a.ord-b.ord);
+  const agenda = linhas.length ? linhas.map(l=>`<li class="${l.passou?'passou':l.ativo?'ativo':''}" title="${esc(l.tip)}"><span class="hora">${l.hora}</span><span>${l.txt}</span></li>`).join('')
+    : `<li class="passou"><span>Sem janelas boas hoje nesses países (fim de semana lá).</span></li>`;
+  el.innerHTML = `
+    <div class="hor-agora">
+      <div class="hor-head"><h3>Agora é hora de falar com…</h3><span class="hor-relogio">${relogios}</span></div>
+      ${agora}
+      <p class="hint" style="margin:12px 0 0">Mesmas janelas por nicho da planilha, no fuso de cada país. Horários em <b>hora daqui</b>; passe o mouse para ver a hora de lá.</p>
+    </div>
+    <div class="hor-hoje">
+      <h3>Hoje <span class="hint" style="font-weight:400;margin:0">hora daqui</span></h3>
+      <ul>${agenda}</ul>
+      <a class="hor-link" href="${PLANILHA_HORARIOS}" target="_blank" rel="noopener">Planilha de horários ↗</a>
+    </div>`;
   const ul = el.querySelector('.hor-hoje ul'), alvo = ul && (ul.querySelector('li.ativo') || ul.querySelector('li:not(.passou)'));
   if(alvo) ul.scrollTop = Math.max(0, alvo.getBoundingClientRect().top - ul.getBoundingClientRect().top - 8);
 }
@@ -158,8 +229,9 @@ document.addEventListener('click', e=>{
   const b = e.target.closest('[data-resp]'); if(b){ respModo = b.dataset.resp; renderRespostas(); return; }
   const c = e.target.closest('[data-hor-nicho]');
   if(c){ // filtra a tabela de contatos por esse nicho, mostrando a fila
+    if(c.dataset.horPais!==undefined){ prospPais = c.dataset.horPais; try{ localStorage.setItem('prospPais', prospPais); }catch(err){} renderProspects(); }
     prospNichoOptions(); document.getElementById('prospNicho').value = c.dataset.horNicho;
-    const temFila = state.prospects.some(p=>p.nicho===c.dataset.horNicho && p.situacao==='a_contatar');
+    const temFila = state.prospects.some(p=>mercadoDe(p)===prospMercado && (!c.dataset.horPais || p.pais===c.dataset.horPais) && p.nicho===c.dataset.horNicho && p.situacao==='a_contatar');
     const f = document.getElementById('prospFilter'); f.value = temFila ? 'a_contatar' : 'open';
     prospLimit = 50; renderProspects();
     document.querySelector('.rt-prosp').scrollIntoView({behavior:'smooth', block:'start'});

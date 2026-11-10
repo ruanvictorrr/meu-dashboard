@@ -190,7 +190,7 @@ function dateOk(d){
   return true;
 }
 // select fixo de nicho, com a quantidade de leads em cada um
-function prospNichoOptions(lista){
+function prospNichoOptions(lista = state.prospects.filter(p=>mercadoDe(p)===prospMercado)){
   const sel = document.getElementById('prospNicho'), counts = {};
   lista.forEach(p=>{ const v = (p.nicho||'').trim(); if(v) counts[v]=(counts[v]||0)+1; });
   const cur = sel.value;
@@ -205,8 +205,7 @@ function renderProspects(){
     b.classList.toggle('on', b.dataset.mercado===prospMercado);
     b.textContent = (b.dataset.mercado==='br' ? '🇧🇷 Brasil' : '🌍 Exterior') + (nMerc[b.dataset.mercado] ? ` · ${nMerc[b.dataset.mercado]}` : '');
   });
-  // horário de WhatsApp e resposta por horário são da prospecção no Brasil
-  document.getElementById('prospAgora').style.display = ext ? 'none' : '';
+  // "Resposta por horário" é da prospecção no Brasil; o "Agora é hora…" do exterior usa o fuso de cada país
   document.getElementById('prospResp').style.display = ext ? 'none' : '';
   // no Exterior: um botão por país (aparece só com 2 ou mais países)
   const doMercado = state.prospects.filter(p=>mercadoDe(p)===prospMercado);
@@ -317,7 +316,7 @@ function renderProspects(){
     </tr>`;}).join('')
     : `<tr><td colspan="7" class="empty">${all.length?'Nada encontrado com esse filtro.':ext?'Nenhum lead do exterior ainda. Use <b>Importar planilha</b> com a lista de Lisboa/EUA ou cadastre um lead com o país preenchido.':'Nenhuma prospecção ainda. Clique em <b>+ Nova prospecção</b> ou <b>Importar planilha</b>.'}</td></tr>`;
 
-  if(!ext){ renderHorarios(); renderRespostas(); }
+  renderHorarios(); if(!ext) renderRespostas();
   const nichos = [...new Set([...NICHOS,...all.map(p=>p.nicho).filter(Boolean)])];
   document.getElementById('nichoList').innerHTML = nichos.map(n=>`<option value="${esc(n)}">`).join('');
 }

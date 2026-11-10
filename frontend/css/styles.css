@@ -230,6 +230,7 @@ dialog h3{margin:0 0 16px;font-size:17px}
 .hor-selo.bom{background:var(--green-soft);color:var(--green)}
 .hor-selo.ok{background:var(--amber-soft);color:var(--amber)}
 .hor-selo.fora{color:var(--muted);font-weight:500;padding-left:0}
+.seg[hidden]{display:none}
 .seg{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:2px}
 .seg button{border:0;background:transparent;padding:5px 12px;border-radius:8px;font-size:13px;cursor:pointer;color:var(--muted)}
 .seg button.on{background:var(--surface);color:var(--text);font-weight:600;box-shadow:var(--shadow)}
