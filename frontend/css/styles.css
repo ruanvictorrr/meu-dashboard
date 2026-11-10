@@ -287,3 +287,8 @@ dialog h3{margin:0 0 16px;font-size:17px}
 .pct-in{display:inline-flex;align-items:center;gap:4px;font-weight:600}
 .pct-in input{width:56px;text-align:right;padding:6px 9px;border:1px solid var(--border);border-radius:8px;background:var(--bg);font-weight:600}
 #view-precos [hidden]{display:none!important}
+
+/* Agenda: linha "📅 Chamada · qui 12/11 15:00" embaixo do nome do lead */
+.agenda-linha button.link{all:unset;cursor:pointer;color:var(--c2);font-weight:600}
+.agenda-linha button.link:hover{text-decoration:underline}
+.agenda-linha button.link:focus-visible{outline:2px solid var(--c2);outline-offset:2px;border-radius:4px}

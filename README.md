@@ -22,6 +22,7 @@ Meu Dashboard/
 │       ├── proximos.js        # "Próximos passos" da Visão geral (cobranças, follow-ups, quem contatar agora)
 │       ├── importar-planilha.js  # leitura de .xlsx/.csv (cores → situação), mescla sem duplicar
 │       ├── formularios.js     # diálogos de cadastro e edição
+│       ├── agenda.js          # "📅 Agendar" no lead: chamada/visita/follow-up → link do Google Agenda
 │       ├── eventos.js         # cliques, filtros, menu Dados, backup, desfazer
 │       ├── reserva.js         # move Dentista/Recife "A contatar" para a reserva do Prospec Automático
 │       ├── nuvem.js           # login e sincronização com o Supabase
