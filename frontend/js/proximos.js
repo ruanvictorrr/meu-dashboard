@@ -8,6 +8,13 @@ function renderProximos(){
   const P = state.prospects, passos = [];
   const add = (cor, icone, titulo, detalhe, botao, acao) => passos.push({cor, icone, titulo, detalhe, botao, acao});
 
+  // 0) compromissos marcados para hoje e amanhã (chamadas, visitas, follow-ups agendados)
+  const amanha = new Date(); amanha.setDate(amanha.getDate()+1); const amanhaStr = amanha.toLocaleDateString('sv-SE');
+  P.filter(p=>agendaAtiva(p) && p.agenda.inicio.slice(0,10)<=amanhaStr)
+    .sort((a,b)=>a.agenda.inicio.localeCompare(b.agenda.inicio))
+    .forEach(p=>{ const t = AGENDA_TIPOS[p.agenda.tipo] || AGENDA_TIPOS.outro, hoje = p.agenda.inicio.slice(0,10)===today();
+      add(hoje?'late':'soon','📅', `${hoje?'Hoje':'Amanhã'} ${p.agenda.inicio.slice(11,16)}: ${esc(t.label.toLowerCase())} com ${esc(p.nome)}`,
+        [p.agenda.nota, p.numero].filter(Boolean).map(esc).join(' · ') || 'Compromisso marcado pelo dashboard', 'Ver', 'agendar:'+p.id); });
   // 1) manutenções atrasadas (dinheiro na mesa)
   if(month===thisMonth){
     const late = state.clients.filter(c=>clientStatus(c,month).code==='late');
@@ -90,6 +97,7 @@ document.addEventListener('click', e=>{
   if(tipo==='tab'){ if(arg==='prospects') irProspeccao(); else document.querySelector(`nav.tabs button[data-tab="${arg}"]`)?.click(); window.scrollTo({top:0,behavior:'smooth'}); }
   else if(tipo==='sit') irProspeccao({sit:arg});
   else if(tipo==='nicho') irProspeccao({sit:'a_contatar', nicho:arg});
+  else if(tipo==='agendar') openAgenda(arg);
   else if(tipo==='importar'){ document.querySelector('nav.tabs button[data-tab="prospects"]').click(); document.getElementById('importProspBtn').click(); }
 });
 setInterval(()=>{ if(!document.hidden) renderProximos(); }, 60*1000);

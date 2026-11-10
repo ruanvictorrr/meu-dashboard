@@ -281,13 +281,13 @@ function renderProspects(){
     const addr = [[p.bairro,p.cidade].filter(Boolean).join(', '),p.endereco].filter(Boolean).join(' · ');
     const maps = p.maps || mapsBusca(p);
     return `<tr>
-      <td style="white-space:normal;min-width:220px"><div class="name">${esc(p.nome)}</div>${maps?`<div class="company"><a class="wa" style="color:var(--muted)" href="${esc(maps)}" target="_blank" rel="noopener" title="Abrir no Google Maps">📍 ${esc(addr||'Ver no Google Maps')}</a></div>`:addr?`<div class="company">${esc(addr)}</div>`:''}</td>
+      <td style="white-space:normal;min-width:220px"><div class="name">${esc(p.nome)}</div>${maps?`<div class="company"><a class="wa" style="color:var(--muted)" href="${esc(maps)}" target="_blank" rel="noopener" title="Abrir no Google Maps">📍 ${esc(addr||'Ver no Google Maps')}</a></div>`:addr?`<div class="company">${esc(addr)}</div>`:''}${agendaLinha(p)}</td>
       <td>${esc(p.nicho||'—')}${seloHorario(p)}</td>
       <td>${p.numero ? (wa?`<a class="wa" href="${wa}" target="_blank" rel="noopener" title="Abrir no WhatsApp">${esc(p.numero)} ↗</a>`:esc(p.numero)) : '—'}</td>
       <td>${fmtDate(p.data)}${p.followupEm?`<div class="company" title="Follow-up enviado">↩︎ follow-up ${fmtDate(p.followupEm.slice(0,10))}</div>`:''}</td>
       <td><select class="sit-select ${st.cls}" data-sit="${p.id}" aria-label="Situação">${SITS.map(x=>`<option value="${x.k}" ${x.k===p.situacao?'selected':''}>${x.label}</option>`).join('')}</select></td>
       <td><div class="obs${p.obs?'':' vazio'}" title="${esc(p.obs||'')}">${esc(p.obs||'—')}</div></td>
-      <td style="text-align:right">${p.situacao==='fechou' ? (isClient?'<span class="badge ok">É cliente</span>':`<button class="btn sm" data-to-client="${p.id}">Virar cliente</button>`) : ''}<button class="btn sm ghost" data-edit-prosp="${p.id}">Editar</button><button class="btn sm ghost danger" data-del-prosp="${p.id}">Excluir</button></td>
+      <td style="text-align:right">${p.situacao==='fechou' ? (isClient?'<span class="badge ok">É cliente</span>':`<button class="btn sm" data-to-client="${p.id}">Virar cliente</button>`) : ''}${p.situacao!=='a_contatar'?`<button class="btn sm ghost" data-agendar="${p.id}" title="Marcar chamada, visita ou follow-up no Google Agenda">📅 ${agendaAtiva(p)?'Reagendar':'Agendar'}</button>`:''}<button class="btn sm ghost" data-edit-prosp="${p.id}">Editar</button><button class="btn sm ghost danger" data-del-prosp="${p.id}">Excluir</button></td>
     </tr>`;}).join('')
     : `<tr><td colspan="7" class="empty">${all.length?'Nada encontrado com esse filtro.':'Nenhuma prospecção ainda. Clique em <b>+ Nova prospecção</b> ou <b>Importar planilha</b>.'}</td></tr>`;
 

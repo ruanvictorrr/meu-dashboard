@@ -390,6 +390,30 @@
   </form>
 </dialog>
 
+<!-- Dialog agendar (chamada, visita, follow-up) → Google Agenda -->
+<dialog id="agendaDlg">
+  <form method="dialog" id="agendaForm">
+    <h3 id="agendaDlgTitle">Agendar</h3>
+    <input type="hidden" name="id">
+    <div class="field"><label>Tipo</label><select name="tipo">
+      <option value="chamada">Chamada de vídeo</option><option value="visita">Visita</option>
+      <option value="followup">Follow-up</option><option value="outro">Outro</option></select></div>
+    <div class="row2">
+      <div class="field"><label>Dia</label><input name="dia" type="date" required></div>
+      <div class="field"><label>Hora</label><input name="hora" type="time" required step="300"></div>
+    </div>
+    <div class="field"><label>Duração</label><select name="dur">
+      <option value="15">15 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></div>
+    <div class="field"><label>Anotação (vai para a descrição do evento)</label><input name="nota" placeholder="Ex.: mostrar a demo e o pacote Presença"></div>
+    <p class="hint" style="margin:4px 0 0">Ao salvar, o Google Agenda abre em outra aba já preenchido. Lá é só clicar em <b>Salvar</b>.</p>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost danger" id="agendaRemover" hidden style="margin-right:auto">Remover</button>
+      <button type="button" class="btn ghost" data-close>Cancelar</button>
+      <button type="submit" class="btn primary">Salvar e abrir agenda</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- Dialog gasto variável -->
 <dialog id="varDlg">
   <form method="dialog" id="varForm">
@@ -496,6 +520,7 @@
 <script src="js/proximos.js"></script>
 <script src="js/importar-planilha.js"></script>
 <script src="js/formularios.js"></script>
+<script src="js/agenda.js"></script>
 <script src="js/precos.js"></script>
 <script src="js/eventos.js"></script>
 <script src="js/reserva.js"></script>
