@@ -153,6 +153,7 @@ const mercadoDe = p => ehBrasil(p.pais) ? 'br' : 'ext';
 const BANDEIRAS = {portugal:'🇵🇹', eua:'🇺🇸', 'estados unidos':'🇺🇸', usa:'🇺🇸', espanha:'🇪🇸', 'reino unido':'🇬🇧', canada:'🇨🇦', franca:'🇫🇷', italia:'🇮🇹', alemanha:'🇩🇪', irlanda:'🇮🇪'};
 const bandeira = pais => BANDEIRAS[String(pais||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim()] || '🌍';
 let prospMercado = (()=>{ try{ return localStorage.getItem('prospMercado')==='ext' ? 'ext' : 'br'; }catch(e){ return 'br'; } })();
+let prospPais = (()=>{ try{ return localStorage.getItem('prospPais')||''; }catch(e){ return ''; } })();
 const today = () => new Date().toLocaleDateString('sv-SE');
 let prospLimit = 50;
 // ordenação da tabela de contatos (clique no cabeçalho): k = coluna, dir 1 = crescente, -1 = decrescente
@@ -207,7 +208,15 @@ function renderProspects(){
   // horário de WhatsApp e resposta por horário são da prospecção no Brasil
   document.getElementById('prospAgora').style.display = ext ? 'none' : '';
   document.getElementById('prospResp').style.display = ext ? 'none' : '';
-  const all = state.prospects.filter(p=>mercadoDe(p)===prospMercado);
+  // no Exterior: um botão por país (aparece só com 2 ou mais países)
+  const doMercado = state.prospects.filter(p=>mercadoDe(p)===prospMercado);
+  const nPais = {}; if(ext) doMercado.forEach(p=>{ const k = (p.pais||'Exterior').trim(); nPais[k]=(nPais[k]||0)+1; });
+  const paises = Object.keys(nPais).sort((a,b)=>nPais[b]-nPais[a] || a.localeCompare(b,'pt-BR'));
+  if(ext && prospPais && !nPais[prospPais]) prospPais = '';
+  const psel = document.getElementById('prospPais');
+  psel.hidden = paises.length < 2;
+  psel.innerHTML = paises.length < 2 ? '' : `<button data-pais="" class="${prospPais?'':'on'}">Todos</button>` + paises.map(k=>`<button data-pais="${esc(k)}" class="${k===prospPais?'on':''}" title="${nPais[k]} lead${nPais[k]>1?'s':''}">${bandeira(k)} ${esc(k)} · ${nPais[k]}</button>`).join('');
+  const all = ext && prospPais ? doMercado.filter(p=>(p.pais||'Exterior').trim()===prospPais) : doMercado;
   const count = k => all.filter(p=>p.situacao===k).length;
   const contacted = all.filter(p=>p.situacao!=='a_contatar');
   const won = count('fechou'), lost = count('perdeu'), noAns = count('sem_resposta');
