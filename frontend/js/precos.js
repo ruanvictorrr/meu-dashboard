@@ -243,7 +243,7 @@ function renderCustos(T){
   const C = custos(), P = precos(), hora = C.hora||0;
   const cs = id => C.servicos?.[id] || {};
   const fil = x => !precoTier || x.tier===precoTier;
-  const custoIn = (id,campo,v,ph) => `<input class="price-in" data-custo="${id}.${campo}" inputmode="decimal" value="${v!=null && v!=='' ? Number(v).toLocaleString('pt-BR',{maximumFractionDigits:2}) : ''}" placeholder="${ph||'—'}">`;
+  const custoIn = (id,campo,v,ph) => `<input class="price-in custo-in" data-custo="${id}.${campo}" inputmode="decimal" value="${v!=null && v!=='' ? Number(v).toLocaleString('pt-BR',{maximumFractionDigits:2}) : ''}" placeholder="${ph||'—'}">`;
   const margem = (preco,custo) => custo==null ? '<span class="muted">—</span>'
     : `<b class="${preco-custo<0?'neg':'pos'}">${brl(preco-custo)}</b>${preco>0?`<div class="company">${Math.round((preco-custo)/preco*100)}%</div>`:''}`;
   const temNum = v => v!=null && v!=='' && !isNaN(v);
@@ -256,21 +256,19 @@ function renderCustos(T){
     return {horas, imp: horas!=null && hora ? horas*hora : null, c1, c2};
   };
   const linha = (nome,sub,tier,preco,mensal,k,inputs) => `<tr>
-    <td><div class="name">${nome}</div><div class="company">${sub}</div></td>
-    <td>${tierTag(tier)}</td>
+    <td><div class="name">${nome} ${tierTag(tier)}</div><div class="company">${sub}</div></td>
     <td class="num">${inputs.horas}</td>
-    <td class="num">${k.imp==null ? '<span class="muted">—</span>' : brl(k.imp)}</td>
-    <td class="num">${margem(preco,k.imp)}</td>
+    <td class="num">${margem(preco,k.imp)}${k.imp!=null ? `<div class="company">custo ${brl(k.imp)}</div>` : ''}</td>
     <td class="num">${inputs.c1}</td>
     <td class="num">${inputs.c2}</td>
     <td class="num">${margem(mensal,k.c1)}${k.c2!=null && k.c2!==k.c1 ? `<div class="company">depois: <b class="${mensal-k.c2<0?'neg':''}">${brl(mensal-k.c2)}</b></div>` : ''}</td></tr>`;
   const sv = P.servicos.filter(fil).map(s=>{ const x = cs(s.id), k = soma([s.id]);
     return linha(esc(s.nome), `${brl(s.completo)} + ${brl(s.mensal)}/mês`, s.tier, s.completo, s.mensal, k,
-      {horas:custoIn(s.id,'horas',x.horas,'h'), c1:custoIn(s.id,'c1',x.c1), c2:custoIn(s.id,'c2',x.c2,'= 1º ano')}); });
+      {horas:custoIn(s.id,'horas',x.horas,'h'), c1:custoIn(s.id,'c1',x.c1), c2:custoIn(s.id,'c2',x.c2,'igual')}); });
   const pc = P.pacotes.filter(fil).map(p=>{ const k = soma(p.itens), v = n => n==null ? '<span class="muted">—</span>' : n.toLocaleString('pt-BR',{maximumFractionDigits:1});
     return linha(`Pacote ${esc(p.nome)}`, `${brl(p.implantacao)} + ${brl(p.mensal)}/mês · soma dos serviços`, p.tier, p.implantacao, p.mensal, k,
       {horas:v(k.horas)+(k.horas!=null?' h':''), c1:k.c1==null?v(null):brl(k.c1), c2:k.c2==null?v(null):brl(k.c2)}); });
-  document.getElementById('precoCustos').innerHTML = sv.join('') + (pc.length ? `<tr class="sep"><td colspan="8">Pacotes</td></tr>${pc.join('')}` : '');
+  document.getElementById('precoCustos').innerHTML = sv.join('') + (pc.length ? `<tr class="sep"><td colspan="6">Pacotes</td></tr>${pc.join('')}` : '');
   const hIn = document.getElementById('precoHora');
   if(hIn!==document.activeElement) hIn.value = hora ? hora.toLocaleString('pt-BR',{maximumFractionDigits:2}) : '';
 }
@@ -302,12 +300,14 @@ document.getElementById('view-precos').addEventListener('change', e=>{
     save(); render(); toast('Limite de desconto atualizado');
   }
 });
-// "Custos e margem" abre e fecha (começa fechado; lembra a escolha neste navegador)
+// "Custos e margem" abre e fecha clicando no cabeçalho (começa fechado; lembra a escolha neste navegador)
 (()=>{
-  const btn = document.getElementById('precoCustosToggle'), corpo = document.getElementById('precoCustosCorpo');
-  const aplicar = aberto => { corpo.hidden = !aberto; btn.setAttribute('aria-expanded', aberto); btn.textContent = aberto ? 'Esconder ▴' : 'Mostrar ▾'; };
+  const head = document.getElementById('precoCustosToggle'), corpo = document.getElementById('precoCustosCorpo');
+  const aplicar = aberto => { corpo.hidden = !aberto; head.setAttribute('aria-expanded', aberto); };
   aplicar(lerPref('precoCustosAberto',['1','0'],'0')==='1');
-  btn.onclick = ()=>{ const aberto = corpo.hidden; aplicar(aberto); gravarPref('precoCustosAberto', aberto?'1':'0'); };
+  const alternar = ()=>{ const aberto = corpo.hidden; aplicar(aberto); gravarPref('precoCustosAberto', aberto?'1':'0'); };
+  head.onclick = alternar;
+  head.onkeydown = e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); alternar(); } };
 })();
 document.getElementById('precoTiers').onclick = e=>{
   const b = e.target.closest('button'); if(!b) return;
