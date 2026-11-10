@@ -26,6 +26,19 @@ const PRECOS_PADRAO = {
     {id:'pac-completo',    nome:'Completo',    tier:'High',  itens:['site-high','bot-high','auto-high','dash-high'], implantacao:17997, mensal:1497},
   ],
   descontoMax: {Low:.10, 'Médio':.10, High:.15, pacote:.05},
+  // clientes do exterior: faixas [mín, máx] de implantação e de mensalidade
+  exterior: {
+    cambio: {usd:5.60},  // a coluna "em reais" converte a faixa em dólar
+    itens: [
+      {nome:'Site',       tier:'Low',   desc:'Landing page de 1 página',             usd:[500,800],   eur:[350,600],   musd:[40,60],   meur:[30,50]},
+      {nome:'Site',       tier:'Médio', desc:'Até 5 páginas + agendamento',          usd:[1200,2000], eur:[800,1400],  musd:[80,120],  meur:[60,90]},
+      {nome:'Site',       tier:'High',  desc:'Completo, blog/loja, SEO',             usd:[2500,4000], eur:[1800,3000], musd:[150,250], meur:[100,180]},
+      {nome:'Chatbot',    tier:'',      desc:'WhatsApp, Instagram ou site',          usd:[800,1500],  eur:[600,1100],  musd:[80,150],  meur:[60,120]},
+      {nome:'Automação',  tier:'',      desc:'Por fluxo',                            usd:[400,1200],  eur:[300,900],   musd:[50,100],  meur:[40,80]},
+      {nome:'Dashboard',  tier:'',      desc:'Painel com os principais números',     usd:[1000,2500], eur:[700,1800],  musd:[80,150],  meur:[60,120]},
+      {nome:'Pacote Presença', tier:'Low', desc:'Site + chatbot',                    usd:[1200,1800], eur:[900,1300],  musd:[99,99],   meur:[79,79]},
+    ],
+  },
 };
 const precos = () => state.precos || PRECOS_PADRAO;
 // primeira edição: copia o padrão para os dados (e daí em diante sincroniza com a nuvem)
@@ -99,6 +112,22 @@ function renderPrecos(){
     <td class="num piso">${brl(piso(p.implantacao,D.pacote))}</td>
     <td class="num pos"><b>${brl(eco)}</b></td></tr>`;}).join('');
 
+  // clientes do exterior (dados antigos podem não ter essa parte: usa o padrão)
+  const X = P.exterior || PRECOS_PADRAO.exterior, cb = X.cambio;
+  const moeda = (v,s) => s + v.toLocaleString('pt-BR');
+  const faixa = (r,s) => r[0]===r[1] ? moeda(r[0],s) : `${moeda(r[0],s)} – ${r[1].toLocaleString('pt-BR')}`;
+  const reais = v => 'R$ ' + (Math.round(v*cb.usd/100)*100).toLocaleString('pt-BR');
+  document.getElementById('precoExterior').innerHTML = X.itens.map(x=>(precoTier && x.tier!==precoTier) ? '' : `<tr>
+    <td><div class="name">${esc(x.nome)}</div><div class="company">${esc(x.desc)}</div></td>
+    <td>${x.tier ? tierTag(x.tier) : '<span class="company">—</span>'}</td>
+    <td class="num"><b>${faixa(x.usd,'$')}</b></td>
+    <td class="num"><b>${faixa(x.eur,'€')}</b></td>
+    <td class="num">${faixa(x.musd,'$')}<div class="company">${faixa(x.meur,'€')}</div></td>
+    <td class="num riscado">~${reais(x.usd[0])} – ${reais(x.usd[1]).slice(3)}</td></tr>`).join('');
+  document.querySelectorAll('[data-cambio]').forEach(el=>{
+    if(el!==document.activeElement) el.value = cb[el.dataset.cambio].toLocaleString('pt-BR',{minimumFractionDigits:2});
+  });
+
   const pct = (k,label,sub) => `<label class="desc-lim"><span>${label}<small>${sub}</small></span>
     <span class="pct-in"><input data-desc="${k}" inputmode="numeric" value="${Math.round((D[k]||0)*100)}">%</span></label>`;
   document.getElementById('precoDescontos').innerHTML =
@@ -124,6 +153,14 @@ document.getElementById('view-precos').addEventListener('change', e=>{
     const P = precosEditaveis(), [lista,i,campo] = el.dataset.preco.split('.');
     P[lista][+i][campo] = parseMoney(el.value);
     save(); render(); toast('Preço atualizado');
+  }
+  if(el.dataset.cambio){
+    const v = parseFloat(el.value.replace(/\./g,'').replace(',','.'));
+    if(!(v>0)){ renderPrecos(); return; }
+    const P = precosEditaveis();
+    if(!P.exterior) P.exterior = JSON.parse(JSON.stringify(PRECOS_PADRAO.exterior));
+    P.exterior.cambio[el.dataset.cambio] = v;
+    el.blur(); save(); render(); toast('Câmbio atualizado');
   }
   if(el.dataset.desc){
     const v = Math.min(90, Math.max(0, parseInt(el.value)||0));
