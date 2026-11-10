@@ -330,13 +330,14 @@
       </table></div>
     </div>
     <div class="card" id="precoCustosCard" style="margin-top:16px;padding:0;overflow:hidden">
-      <div class="card-head"><div><h3>Custos e margem</h3><p class="hint" style="margin:0">Quanto sobra de cada preço depois de pagar sua hora, hospedagem, domínio, API e servidor.</p></div>
-        <button type="button" class="btn ghost sm" id="precoCustosToggle" aria-expanded="false" aria-controls="precoCustosCorpo">Mostrar ▾</button></div>
+      <div class="card-head custos-head" id="precoCustosToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="precoCustosCorpo" title="Clique para abrir ou fechar">
+        <div><h3>Custos e margem</h3><p class="hint" style="margin:0">Quanto sobra de cada preço depois de pagar sua hora, hospedagem, domínio, API e servidor.</p></div>
+        <span class="custos-seta" aria-hidden="true">▾</span></div>
       <div id="precoCustosCorpo" hidden>
       <div class="custos-topo"><p class="hint" style="margin:0">Implantação = horas × valor da sua hora. Mensal = mensalidade − custo. "Depois" = a partir do 2º ano; vazio = igual ao 1º ano.</p>
         <div class="cambio"><label>Sua hora: R$ <input class="price-in" id="precoHora" inputmode="decimal" placeholder="—"></label></div></div>
-      <div style="overflow-x:auto"><table class="preco-tbl">
-        <thead><tr><th>Serviço</th><th>Ticket</th><th class="num">Horas</th><th class="num">Custo implantação</th><th class="num">Sobra implantação</th><th class="num">Custo/mês 1º ano</th><th class="num">Custo/mês depois</th><th class="num">Sobra/mês</th></tr></thead>
+      <div class="custos-wrap"><table class="preco-tbl custos-tbl">
+        <thead><tr><th>Serviço</th><th class="num">Horas</th><th class="num">Sobra na implantação</th><th class="num">Custo/mês 1º ano</th><th class="num">Custo/mês depois</th><th class="num">Sobra por mês</th></tr></thead>
         <tbody id="precoCustos"></tbody>
       </table></div>
       <p class="hint" style="margin:0;padding:10px 16px 14px">Site: hospedagem Hostinger BR ~R$ 40 no 1º ano + domínio ~R$ 40/ano ≈ R$ 7/mês. A renovação da hospedagem é mais cara: preencha "Custo/mês depois" quando souber o valor. Chatbot: some a API do WhatsApp e o servidor.</p>

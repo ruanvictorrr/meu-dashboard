@@ -297,3 +297,14 @@ dialog h3{margin:0 0 16px;font-size:17px}
 .preco-tbl tr.sep td{background:var(--surface-2);color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding-top:6px;padding-bottom:6px}
 .preco-tbl .muted{color:var(--muted)}
 .custos-topo{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:0 18px 12px}
+.custos-head{cursor:pointer;user-select:none;align-items:center}
+.custos-head:hover h3{color:var(--accent)}
+.custos-head:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:14px}
+.custos-seta{font-size:18px;color:var(--muted);transition:transform .15s}
+.custos-head[aria-expanded="true"] .custos-seta{transform:rotate(180deg)}
+.custos-wrap{overflow-x:auto}
+.custos-tbl{min-width:0}
+.custos-tbl th{white-space:normal;line-height:1.25;vertical-align:bottom}
+.custos-tbl td:first-child{min-width:180px}
+.custos-tbl .name .tier-tag{margin-left:6px;vertical-align:1px}
+.custos-tbl .custo-in{width:64px}
