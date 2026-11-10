@@ -26,23 +26,40 @@ const PRECOS_PADRAO = {
     {id:'pac-completo',    nome:'Completo',    tier:'High',  itens:['site-high','bot-high','auto-high','dash-high'], implantacao:17997, mensal:1497},
   ],
   descontoMax: {Low:.10, 'Médio':.10, High:.15, pacote:.05},
-  // clientes do exterior: faixas [mín, máx] de implantação e de mensalidade
+  // clientes do exterior: mesma estrutura do Brasil, com preços em dólar (usd) e em euro (eur).
+  // Mesma regra: só código ≈ 70% do completo; preços de entrada até ter 3 a 5 clientes de fora.
   exterior: {
-    cambio: {usd:5.60},  // a coluna "em reais" converte a faixa em dólar
-    itens: [
-      {nome:'Site',       tier:'Low',   desc:'Landing page de 1 página',             usd:[500,800],   eur:[350,600],   musd:[40,60],   meur:[30,50]},
-      {nome:'Site',       tier:'Médio', desc:'Até 5 páginas + agendamento',          usd:[1200,2000], eur:[800,1400],  musd:[80,120],  meur:[60,90]},
-      {nome:'Site',       tier:'High',  desc:'Completo, blog/loja, SEO',             usd:[2500,4000], eur:[1800,3000], musd:[150,250], meur:[100,180]},
-      {nome:'Chatbot',    tier:'',      desc:'WhatsApp, Instagram ou site',          usd:[800,1500],  eur:[600,1100],  musd:[80,150],  meur:[60,120]},
-      {nome:'Automação',  tier:'',      desc:'Por fluxo',                            usd:[400,1200],  eur:[300,900],   musd:[50,100],  meur:[40,80]},
-      {nome:'Dashboard',  tier:'',      desc:'Painel com os principais números',     usd:[1000,2500], eur:[700,1800],  musd:[80,150],  meur:[60,120]},
-      {nome:'Pacote Presença', tier:'Low', desc:'Site + chatbot',                    usd:[1200,1800], eur:[900,1300],  musd:[99,99],   meur:[79,79]},
+    cambio: {usd:5.60, eur:6.20},  // converte para reais
+    servicos: [
+      {id:'site-low',  nome:'Site', tier:'Low',   desc:'Landing page de 1 página',                    usd:{codigo:497,  completo:697,  mensal:47},  eur:{codigo:347,  completo:497,  mensal:37}},
+      {id:'site-med',  nome:'Site', tier:'Médio', desc:'Até 5 páginas + agendamento',                 usd:{codigo:1097, completo:1597, mensal:97},  eur:{codigo:797,  completo:1097, mensal:77}},
+      {id:'site-high', nome:'Site', tier:'High',  desc:'Completo, blog ou loja, SEO',                 usd:{codigo:2497, completo:3497, mensal:197}, eur:{codigo:1797, completo:2497, mensal:147}},
+      {id:'bot-low',   nome:'Chatbot', tier:'Low',   desc:'Menu com respostas prontas e passagem para humano', usd:{codigo:597, completo:897, mensal:97}, eur:{codigo:497, completo:697, mensal:77}},
+      {id:'bot-med',   nome:'Chatbot', tier:'Médio', desc:'IA treinada com dados do negócio (WhatsApp, Instagram ou site)', usd:{codigo:997, completo:1497, mensal:147}, eur:{codigo:797, completo:1097, mensal:117}},
+      {id:'bot-high',  nome:'Chatbot', tier:'High',  desc:'IA ligada a agenda e CRM, com vários atendentes', usd:{codigo:0, completo:2497, mensal:247}, eur:{codigo:0, completo:1797, mensal:177}},
+      {id:'auto-low',  nome:'Automações', tier:'Low',   desc:'1 fluxo simples',                       usd:{codigo:347,  completo:497,  mensal:57},  eur:{codigo:247,  completo:347,  mensal:47}},
+      {id:'auto-med',  nome:'Automações', tier:'Médio', desc:'3 a 5 fluxos',                          usd:{codigo:697,  completo:997,  mensal:97},  eur:{codigo:497,  completo:697,  mensal:77}},
+      {id:'auto-high', nome:'Automações', tier:'High',  desc:'Processo inteiro automatizado e integrado', usd:{codigo:1397, completo:1997, mensal:197}, eur:{codigo:997, completo:1497, mensal:147}},
+      {id:'dash-low',  nome:'Dashboard', tier:'Low',   desc:'Painel simples com os principais números', usd:{codigo:697,  completo:997,  mensal:97},  eur:{codigo:497,  completo:697,  mensal:77}},
+      {id:'dash-med',  nome:'Dashboard', tier:'Médio', desc:'Painel web com 1 ou 2 fontes de dados',    usd:{codigo:1297, completo:1797, mensal:147}, eur:{codigo:897,  completo:1297, mensal:117}},
+      {id:'dash-high', nome:'Dashboard', tier:'High',  desc:'Várias fontes, atualização automática e login', usd:{codigo:2097, completo:2997, mensal:247}, eur:{codigo:1497, completo:2197, mensal:177}},
+    ],
+    pacotes: [
+      {id:'pac-presenca',    nome:'Presença',    tier:'Low',   itens:['site-low','bot-low'],                           usd:{implantacao:1297, mensal:97},  eur:{implantacao:897,  mensal:77}},
+      {id:'pac-crescimento', nome:'Crescimento', tier:'Médio', itens:['site-med','bot-med','auto-med'],                usd:{implantacao:3497, mensal:297}, eur:{implantacao:2497, mensal:227}},
+      {id:'pac-completo',    nome:'Completo',    tier:'High',  itens:['site-high','bot-high','auto-high','dash-high'], usd:{implantacao:9497, mensal:747}, eur:{implantacao:6997, mensal:547}},
     ],
   },
 };
 const precos = () => state.precos || PRECOS_PADRAO;
 // primeira edição: copia o padrão para os dados (e daí em diante sincroniza com a nuvem)
-const precosEditaveis = () => state.precos || (state.precos = JSON.parse(JSON.stringify(PRECOS_PADRAO)));
+const precosEditaveis = () => {
+  const P = state.precos || (state.precos = JSON.parse(JSON.stringify(PRECOS_PADRAO)));
+  // dados antigos: sem tabela do exterior, ou no formato velho (faixas): troca pelo padrão e mantém o câmbio
+  if(!P.exterior?.servicos) P.exterior = {...JSON.parse(JSON.stringify(PRECOS_PADRAO.exterior)), cambio:{...PRECOS_PADRAO.exterior.cambio, ...(P.exterior?.cambio||{})}};
+  return P;
+};
+const exterior = () => { const X = precos().exterior; return X?.servicos ? {...X, cambio:{...PRECOS_PADRAO.exterior.cambio, ...X.cambio}} : {...PRECOS_PADRAO.exterior, cambio:{...PRECOS_PADRAO.exterior.cambio, ...(X?.cambio||{})}}; };
 const piso = (v,desc) => v>0 ? Math.max(0, Math.floor((v*(1-desc)-7)/10)*10+7) : 0;
 const servico = id => precos().servicos.find(s=>s.id===id);
 const avulsoDe = p => p.itens.map(servico).filter(Boolean).reduce((a,s)=>({imp:a.imp+s.completo, men:a.men+s.mensal}),{imp:0,men:0});
@@ -85,52 +102,68 @@ function pisoAviso(el, info, valor){
 const tierTag = t => `<span class="tier-tag" style="--tc:${TIER_COR[t]}">${t}</span>`;
 const precoIn = (path,v) => `<input class="price-in" data-preco="${path}" inputmode="decimal" value="${v ? v.toLocaleString('pt-BR',{maximumFractionDigits:2}) : ''}" placeholder="—">`;
 let precoTier = '';
-// Brasil ou exterior: lembra a escolha neste navegador
-let precoMercado = (()=>{ try{ return localStorage.getItem('precoMercado')==='ext' ? 'ext' : 'br'; }catch(e){ return 'br'; } })();
+// Brasil ou exterior, e dólar ou euro: lembra a escolha neste navegador
+const lerPref = (k,ok,pad) => { try{ const v = localStorage.getItem(k); return ok.includes(v) ? v : pad; }catch(e){ return pad; } };
+const gravarPref = (k,v) => { try{ localStorage.setItem(k,v); }catch(e){} };
+let precoMercado = lerPref('precoMercado',['br','ext'],'br');
+let precoMoeda = lerPref('precoMoeda',['usd','eur'],'usd');
+
+// a tabela que está na tela: Brasil (R$) ou exterior na moeda escolhida
+function tabelaAtual(){
+  const P = precos();
+  if(precoMercado==='br') return {
+    servicos: P.servicos.map((s,i)=>({...s, path:`servicos.${i}`})),
+    pacotes: P.pacotes.map((p,i)=>({...p, path:`pacotes.${i}`})),
+    fmt: brl, cambio: 1, ext: false,
+  };
+  const X = exterior(), m = precoMoeda, simb = m==='usd' ? '$' : '€';
+  return {
+    servicos: X.servicos.map((s,i)=>({...s, ...s[m], path:`exterior.servicos.${i}.${m}`})),
+    pacotes: X.pacotes.map((p,i)=>({...p, ...p[m], path:`exterior.pacotes.${i}.${m}`})),
+    fmt: v => `${simb} ${Math.round(v||0).toLocaleString('pt-BR')}`,
+    cambio: X.cambio[m], ext: true, moeda: m,
+  };
+}
+const emReais = (v,T) => T.ext ? `<div class="company">≈ R$ ${(Math.round(v*T.cambio/100)*100).toLocaleString('pt-BR')}</div>` : '';
+
 function renderPrecos(){
-  const P = precos(), D = P.descontoMax;
+  const P = precos(), D = P.descontoMax, T = tabelaAtual(), $ = T.fmt;
   const fil = x => !precoTier || x.tier===precoTier;
+  const sv = id => T.servicos.find(s=>s.id===id);
   document.querySelectorAll('#precoTiers button').forEach(b=>b.classList.toggle('on', b.dataset.tier===precoTier));
   document.querySelectorAll('#precoMercado button').forEach(b=>b.classList.toggle('on', b.dataset.mercado===precoMercado));
-  document.querySelectorAll('#view-precos .preco-br').forEach(el=>el.hidden = precoMercado!=='br');
-  document.querySelectorAll('#view-precos .preco-ext').forEach(el=>el.hidden = precoMercado!=='ext');
+  document.querySelectorAll('#precoMoeda button').forEach(b=>b.classList.toggle('on', b.dataset.moeda===precoMoeda));
+  document.getElementById('precoMoeda').hidden = !T.ext;
+  document.querySelectorAll('#view-precos .preco-ext').forEach(el=>el.hidden = !T.ext);
+  document.getElementById('precoServicosTit').textContent = T.ext ? `Serviços · exterior (${T.moeda==='usd'?'dólar':'euro'})` : 'Serviços';
+  document.getElementById('precoPacotesTit').textContent = T.ext ? `Pacotes · exterior (${T.moeda==='usd'?'dólar':'euro'})` : 'Pacotes';
 
-  document.getElementById('precoServicos').innerHTML = P.servicos.map((s,i)=>!fil(s)?'':`<tr>
+  document.getElementById('precoServicos').innerHTML = T.servicos.map(s=>!fil(s)?'':`<tr>
     <td><div class="name">${esc(s.nome)}</div><div class="company">${esc(s.desc)}</div></td>
     <td>${tierTag(s.tier)}</td>
-    <td class="num">${precoIn(`servicos.${i}.codigo`,s.codigo)}</td>
-    <td class="num">${precoIn(`servicos.${i}.completo`,s.completo)}</td>
-    <td class="num">${precoIn(`servicos.${i}.mensal`,s.mensal)}</td>
-    <td class="num piso">${brl(piso(s.completo,D[s.tier]||0))}</td>
-    <td class="num"><b>${brl(s.completo+12*s.mensal)}</b></td></tr>`).join('');
+    <td class="num">${precoIn(`${s.path}.codigo`,s.codigo)}</td>
+    <td class="num">${precoIn(`${s.path}.completo`,s.completo)}</td>
+    <td class="num">${precoIn(`${s.path}.mensal`,s.mensal)}</td>
+    <td class="num piso">${$(piso(s.completo,D[s.tier]||0))}</td>
+    <td class="num"><b>${$(s.completo+12*s.mensal)}</b>${emReais(s.completo+12*s.mensal,T)}</td></tr>`).join('');
 
-  document.getElementById('precoPacotes').innerHTML = P.pacotes.map((p,i)=>{
+  document.getElementById('precoPacotes').innerHTML = T.pacotes.map(p=>{
     if(!fil(p)) return '';
-    const a = avulsoDe(p), off = a.imp ? 1-p.implantacao/a.imp : 0, eco = (a.imp+12*a.men)-(p.implantacao+12*p.mensal);
+    const a = p.itens.map(sv).filter(Boolean).reduce((a,s)=>({imp:a.imp+s.completo, men:a.men+s.mensal}),{imp:0,men:0});
+    const off = a.imp ? 1-p.implantacao/a.imp : 0, eco = (a.imp+12*a.men)-(p.implantacao+12*p.mensal);
     return `<tr>
-    <td><div class="name">${esc(p.nome)}</div><div class="company">${p.itens.map(id=>esc(servico(id)?.nome||id)).join(' + ')}</div></td>
+    <td><div class="name">${esc(p.nome)}</div><div class="company">${p.itens.map(id=>esc(sv(id)?.nome||id)).join(' + ')}</div></td>
     <td>${tierTag(p.tier)}</td>
-    <td class="num"><s class="riscado">${brl(a.imp)}</s><div class="company"><s>${brl(a.men)}/mês</s></div></td>
-    <td class="num">${precoIn(`pacotes.${i}.implantacao`,p.implantacao)}</td>
-    <td class="num">${precoIn(`pacotes.${i}.mensal`,p.mensal)}</td>
+    <td class="num"><s class="riscado">${$(a.imp)}</s><div class="company"><s>${$(a.men)}/mês</s></div></td>
+    <td class="num">${precoIn(`${p.path}.implantacao`,p.implantacao)}</td>
+    <td class="num">${precoIn(`${p.path}.mensal`,p.mensal)}</td>
     <td class="num">${Math.round(off*100)}%</td>
-    <td class="num piso">${brl(piso(p.implantacao,D.pacote))}</td>
-    <td class="num pos"><b>${brl(eco)}</b></td></tr>`;}).join('');
+    <td class="num piso">${$(piso(p.implantacao,D.pacote))}</td>
+    <td class="num pos"><b>${$(eco)}</b>${emReais(eco,T)}</td></tr>`;}).join('');
 
-  // clientes do exterior (dados antigos podem não ter essa parte: usa o padrão)
-  const X = P.exterior || PRECOS_PADRAO.exterior, cb = X.cambio;
-  const moeda = (v,s) => s + v.toLocaleString('pt-BR');
-  const faixa = (r,s) => r[0]===r[1] ? moeda(r[0],s) : `${moeda(r[0],s)} – ${r[1].toLocaleString('pt-BR')}`;
-  const reais = v => 'R$ ' + (Math.round(v*cb.usd/100)*100).toLocaleString('pt-BR');
-  document.getElementById('precoExterior').innerHTML = X.itens.map(x=>(precoTier && x.tier!==precoTier) ? '' : `<tr>
-    <td><div class="name">${esc(x.nome)}</div><div class="company">${esc(x.desc)}</div></td>
-    <td>${x.tier ? tierTag(x.tier) : '<span class="company">—</span>'}</td>
-    <td class="num"><b>${faixa(x.usd,'$')}</b></td>
-    <td class="num"><b>${faixa(x.eur,'€')}</b></td>
-    <td class="num">${faixa(x.musd,'$')}<div class="company">${faixa(x.meur,'€')}</div></td>
-    <td class="num riscado">~${reais(x.usd[0])} – ${reais(x.usd[1]).slice(3)}</td></tr>`).join('');
+  const cb = exterior().cambio;
   document.querySelectorAll('[data-cambio]').forEach(el=>{
-    if(el!==document.activeElement) el.value = cb[el.dataset.cambio].toLocaleString('pt-BR',{minimumFractionDigits:2});
+    if(el!==document.activeElement) el.value = (cb[el.dataset.cambio]||0).toLocaleString('pt-BR',{minimumFractionDigits:2});
   });
 
   const pct = (k,label,sub) => `<label class="desc-lim"><span>${label}<small>${sub}</small></span>
@@ -138,14 +171,14 @@ function renderPrecos(){
   document.getElementById('precoDescontos').innerHTML =
     pct('Low','Low','implantação') + pct('Médio','Médio','implantação') + pct('High','High','à vista ou em etapas') + pct('pacote','Pacotes','além do desconto do pacote');
 
-  // quantos clientes cobrem os gastos fixos do mês selecionado
+  // quantos clientes cobrem os gastos fixos do mês selecionado (mensalidade convertida para reais)
   const fixos = monthStats(month).fixed, mrr = monthStats(month).mrr;
-  const alvos = [...P.pacotes.map(p=>({nome:`Pacote ${p.nome}`, tier:p.tier, m:p.mensal})),
-                 ...P.servicos.filter(s=>s.nome==='Site').map(s=>({nome:`Site ${s.tier}`, tier:s.tier, m:s.mensal}))];
+  const alvos = [...T.pacotes.map(p=>({nome:`Pacote ${p.nome}`, tier:p.tier, m:p.mensal*T.cambio})),
+                 ...T.servicos.filter(s=>s.nome==='Site').map(s=>({nome:`Site ${s.tier}`, tier:s.tier, m:s.mensal*T.cambio}))];
   const falta = Math.max(0, fixos - mrr);
   document.getElementById('precoEquilibrio').innerHTML = !fixos
     ? '<div class="empty" style="padding:16px 8px">Cadastre seus gastos fixos no Financeiro para ver quantos clientes precisa.</div>'
-    : `<p class="hint">Gastos fixos de ${monthName(month,{month:'long'})}: <b>${brl(fixos)}</b> · manutenções atuais: <b>${brl(mrr)}</b>${falta ? ` · faltam <b class="neg">${brl(falta)}/mês</b>` : ' · <b class="pos">já cobertos</b>'}</p>`
+    : `<p class="hint">Gastos fixos de ${monthName(month,{month:'long'})}: <b>${brl(fixos)}</b> · manutenções atuais: <b>${brl(mrr)}</b>${falta ? ` · faltam <b class="neg">${brl(falta)}/mês</b>` : ' · <b class="pos">já cobertos</b>'}${T.ext ? ` · clientes de fora pagando em ${T.moeda==='usd'?'dólar':'euro'}` : ''}</p>`
       + alvos.map(x=>{ const n = x.m ? Math.ceil(falta/x.m) : 0;
           return `<div class="hbar"><span>${esc(x.nome)}</span><div class="track"><div style="width:${falta?Math.min(100,(x.m/falta)*100):100}%;background:${TIER_COR[x.tier]}"></div></div><span class="n">${falta ? n+' cliente'+(n!==1?'s':'') : '✓'}</span></div>`; }).join('');
 
@@ -155,16 +188,15 @@ function renderPrecos(){
 document.getElementById('view-precos').addEventListener('change', e=>{
   const el = e.target;
   if(el.dataset.preco){
-    const P = precosEditaveis(), [lista,i,campo] = el.dataset.preco.split('.');
-    P[lista][+i][campo] = parseMoney(el.value);
+    const ks = el.dataset.preco.split('.'), campo = ks.pop();
+    let o = precosEditaveis(); for(const k of ks) o = o[k];
+    o[campo] = parseMoney(el.value);
     save(); render(); toast('Preço atualizado');
   }
   if(el.dataset.cambio){
     const v = parseFloat(el.value.replace(/\./g,'').replace(',','.'));
     if(!(v>0)){ renderPrecos(); return; }
-    const P = precosEditaveis();
-    if(!P.exterior) P.exterior = JSON.parse(JSON.stringify(PRECOS_PADRAO.exterior));
-    P.exterior.cambio[el.dataset.cambio] = v;
+    precosEditaveis().exterior.cambio[el.dataset.cambio] = v;
     el.blur(); save(); render(); toast('Câmbio atualizado');
   }
   if(el.dataset.desc){
@@ -179,9 +211,11 @@ document.getElementById('precoTiers').onclick = e=>{
 };
 document.getElementById('precoMercado').onclick = e=>{
   const b = e.target.closest('button'); if(!b) return;
-  precoMercado = b.dataset.mercado;
-  try{ localStorage.setItem('precoMercado', precoMercado); }catch(err){}
-  renderPrecos();
+  precoMercado = b.dataset.mercado; gravarPref('precoMercado', precoMercado); renderPrecos();
+};
+document.getElementById('precoMoeda').onclick = e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  precoMoeda = b.dataset.moeda; gravarPref('precoMoeda', precoMoeda); renderPrecos();
 };
 document.getElementById('precoReset').onclick = ()=>{
   if(!confirm('Voltar todos os preços e limites de desconto para os valores da planilha?')) return;

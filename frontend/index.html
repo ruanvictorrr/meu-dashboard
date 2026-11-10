@@ -309,39 +309,36 @@
       <h2>Tabela de preços</h2>
       <div class="toolbar">
         <div class="seg" id="precoMercado"><button data-mercado="br" class="on">🇧🇷 Brasil</button><button data-mercado="ext">🌍 Exterior</button></div>
+        <div class="seg" id="precoMoeda" hidden><button data-moeda="usd" class="on">🇺🇸 Dólar</button><button data-moeda="eur">🇵🇹 Euro</button></div>
         <div class="seg" id="precoTiers"><button data-tier="" class="on">Todos</button><button data-tier="Low">Low</button><button data-tier="Médio">Médio</button><button data-tier="High">High</button></div>
         <button class="btn ghost" id="precoReset" hidden>Restaurar valores da planilha</button>
       </div>
     </div>
-    <div class="card preco-br" style="padding:0;overflow:hidden">
-      <div class="card-head"><div><h3>Serviços</h3><p class="hint" style="margin:0">Clique num valor para editar. Só código = você entrega os arquivos · Completo = publicado, com domínio e configuração.</p></div></div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="card-head"><div><h3 id="precoServicosTit">Serviços</h3><p class="hint" style="margin:0">Clique num valor para editar. Só código = você entrega os arquivos · Completo = publicado, com domínio e configuração.</p></div></div>
       <div style="overflow-x:auto"><table class="preco-tbl">
         <thead><tr><th>Serviço</th><th>Ticket</th><th class="num">Só código</th><th class="num">Completo</th><th class="num">Mensal</th><th class="num">Piso</th><th class="num">1º ano</th></tr></thead>
         <tbody id="precoServicos"></tbody>
       </table></div>
     </div>
-    <div class="card preco-br" style="margin-top:16px;padding:0;overflow:hidden">
-      <div class="card-head"><div><h3>Pacotes</h3><p class="hint" style="margin:0">O preço avulso (riscado) é a soma dos serviços e muda sozinho quando você edita a tabela acima.</p></div></div>
+    <div class="card" style="margin-top:16px;padding:0;overflow:hidden">
+      <div class="card-head"><div><h3 id="precoPacotesTit">Pacotes</h3><p class="hint" style="margin:0">O preço avulso (riscado) é a soma dos serviços e muda sozinho quando você edita a tabela acima.</p></div></div>
       <div style="overflow-x:auto"><table class="preco-tbl">
         <thead><tr><th>Pacote</th><th>Ticket</th><th class="num">Avulso</th><th class="num">Pacote</th><th class="num">Mensal</th><th class="num">Desconto</th><th class="num">Piso</th><th class="num">Economia 1º ano</th></tr></thead>
         <tbody id="precoPacotes"></tbody>
       </table></div>
     </div>
-    <div class="card preco-ext" style="padding:0;overflow:hidden">
-      <div class="card-head"><div><h3>Clientes do exterior</h3><p class="hint" style="margin:0">Preços de entrada, enquanto não há depoimentos de clientes de fora. Depois de 3 a 5 clientes, suba para o meio da faixa.</p></div>
-        <div class="cambio"><label>US$ 1 = R$ <input class="price-in" data-cambio="usd" inputmode="decimal"></label></div></div>
-      <div style="overflow-x:auto"><table class="preco-tbl">
-        <thead><tr><th>Serviço</th><th>Ticket</th><th class="num">🇺🇸 EUA (USD)</th><th class="num">🇵🇹 Portugal (EUR)</th><th class="num">Mensal</th><th class="num">Em reais (aprox.)</th></tr></thead>
-        <tbody id="precoExterior"></tbody>
-      </table></div>
+    <div class="card preco-ext" style="margin-top:16px;padding:0;overflow:hidden">
+      <div class="card-head"><div><h3>Como cobrar clientes de fora</h3><p class="hint" style="margin:0">Preços de entrada, enquanto não há depoimentos de clientes de fora. Depois de 3 a 5 clientes, suba os valores.</p></div>
+        <div class="cambio"><label>US$ 1 = R$ <input class="price-in" data-cambio="usd" inputmode="decimal"></label><label>€ 1 = R$ <input class="price-in" data-cambio="eur" inputmode="decimal"></label></div></div>
       <ul class="hint ext-regras">
         <li><b>50% adiantado e 50% na entrega.</b> A implantação entra por transferência na <b>Wise</b>.</li>
         <li><b>Mensalidade no cartão</b>, com cobrança automática pelo <b>Stripe</b>.</li>
-        <li>Preços terminados em 7 também funcionam lá fora: $497, $97, $1.497.</li>
+        <li>O piso e os limites de desconto são os mesmos do Brasil. O "≈ R$" usa o câmbio acima.</li>
         <li>Leads de Lisboa com site fraco: redesign com marcação online, no <b>Site Médio</b>.</li>
       </ul>
     </div>
-    <div class="grid two preco-br">
+    <div class="grid two">
       <div class="card">
         <h3>Quantos clientes cobrem seus gastos fixos</h3>
         <p class="hint">Quantos clientes de cada tipo faltam para as manutenções pagarem os gastos fixos do mês</p>
