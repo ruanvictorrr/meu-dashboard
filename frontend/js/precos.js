@@ -217,16 +217,20 @@ function renderPrecos(){
   const semFid = T.ext || (precoTier && precoTier!=='Low');
   document.getElementById('precoSemEntradaCard').hidden = semFid;
   if(!semFid){
-    const planos = [...T.pacotes.filter(p=>p.tier==='Low').map(p=>({nome:`Pacote ${p.nome}`, sub:p.itens.map(id=>sv(id)?.nome||id).join(' + '), imp:p.implantacao, men:p.mensal})),
-                    ...T.servicos.filter(s=>s.tier==='Low' && s.completo>0).map(s=>({nome:`${s.nome} Low`, sub:s.desc, imp:s.completo, men:s.mensal}))];
-    document.getElementById('precoSemEntrada').innerHTML = planos.map(x=>{
-      const m = semEntrada(x.imp, x.men), pi = Math.min(m, semEntradaPiso(x.imp, x.men)), normal = x.imp + 12*x.men;
-      return `<tr><td><div class="name">${esc(x.nome)}</div><div class="company">${esc(x.sub)}</div></td>
-      <td class="num">${$(x.imp)} + ${$(x.men)}/mês</td>
-      <td class="num"><b>${$(m)}/mês</b><div class="company">nada de entrada</div></td>
-      <td class="num piso">${$(pi)}/mês</td>
-      <td class="num">${$(x.men)}/mês</td>
-      <td class="num pos"><b>${$(12*m - normal)}</b><div class="company">${$(12*pi - normal)} no piso</div></td></tr>`;}).join('');
+    const linha = (nome, sub, tier, imp, men) => {
+      const m = semEntrada(imp, men), pi = Math.min(m, semEntradaPiso(imp, men));
+      return `<tr><td><div class="name">${esc(nome)}</div><div class="company">${esc(sub)}</div></td>
+      <td>${tierTag(tier)}</td>
+      <td class="num">${$(imp)}</td>
+      <td class="num">${$(men)}</td>
+      <td class="num"><b>${$(m)}</b></td>
+      <td class="num piso">${$(pi)}</td>
+      <td class="num">${$(men)}</td>
+      <td class="num pos"><b>${$(12*m - (imp + 12*men))}</b></td></tr>`;
+    };
+    const sl = T.servicos.filter(s=>s.tier==='Low' && s.completo>0).map(s=>linha(s.nome, s.desc, s.tier, s.completo, s.mensal));
+    const pl = T.pacotes.filter(p=>p.tier==='Low').map(p=>linha(p.nome, p.itens.map(id=>sv(id)?.nome||id).join(' + '), p.tier, p.implantacao, p.mensal));
+    document.getElementById('precoSemEntrada').innerHTML = sl.join('') + (pl.length ? `<tr class="sep"><td colspan="8">Pacotes</td></tr>${pl.join('')}` : '');
   }
 
   const cb = exterior().cambio;
