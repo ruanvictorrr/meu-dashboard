@@ -67,7 +67,9 @@ const precosEditaveis = () => {
 const exterior = () => { const X = precos().exterior; return X?.servicos ? {...X, cambio:{...PRECOS_PADRAO.exterior.cambio, ...X.cambio}} : {...PRECOS_PADRAO.exterior, cambio:{...PRECOS_PADRAO.exterior.cambio, ...(X?.cambio||{})}}; };
 const custos = () => precos().custos || PRECOS_PADRAO.custos;
 const piso = (v,desc) => v>0 ? Math.max(0, Math.floor((v*(1-desc)-7)/10)*10+7) : 0;
-const servico = id => precos().servicos.find(s=>s.id===id);
+// mensalidade do plano sem entrada: implantação ÷ 12 com 10% a mais + mensal, arredondada para cima terminando em 7
+const semEntrada = (imp, men) => Math.ceil((imp*1.1/12 + men - 7)/10)*10 + 7;
+const servico = id =>precos().servicos.find(s=>s.id===id);
 const avulsoDe = p => p.itens.map(servico).filter(Boolean).reduce((a,s)=>({imp:a.imp+s.completo, men:a.men+s.mensal}),{imp:0,men:0});
 
 /* Produto escolhido num formulário: "s:<id>:completo", "s:<id>:codigo" ou "p:<id>" */
@@ -208,6 +210,20 @@ function renderPrecos(){
     <td class="num">${Math.round(off*100)}%</td>
     <td class="num piso">${$(piso(p.implantacao,D.pacote))}</td>
     <td class="num pos"><b>${$(eco)}</b>${emReais(eco,T)}</td></tr>`;}).join('');
+
+  // sem entrada, fidelidade de 12 meses (só Brasil, planos Low): implantação ÷ 12 com 10% a mais, somada à mensalidade
+  document.getElementById('precoSemEntradaCard').hidden = T.ext;
+  if(!T.ext){
+    const planos = [...T.pacotes.filter(p=>p.tier==='Low').map(p=>({nome:`Pacote ${p.nome}`, sub:p.itens.map(id=>sv(id)?.nome||id).join(' + '), imp:p.implantacao, men:p.mensal})),
+                    ...T.servicos.filter(s=>s.tier==='Low' && s.completo>0).map(s=>({nome:`${s.nome} Low`, sub:s.desc, imp:s.completo, men:s.mensal}))];
+    document.getElementById('precoSemEntrada').innerHTML = planos.map(x=>{
+      const m = semEntrada(x.imp, x.men), ganho = 12*m - (x.imp + 12*x.men);
+      return `<tr><td><div class="name">${esc(x.nome)}</div><div class="company">${esc(x.sub)}</div></td>
+      <td class="num">${$(x.imp)} + ${$(x.men)}/mês</td>
+      <td class="num"><b>${$(m)}/mês</b><div class="company">nada de entrada</div></td>
+      <td class="num">${$(x.men)}/mês</td>
+      <td class="num pos"><b>${$(ganho)}</b><div class="company">no 1º ano</div></td></tr>`;}).join('');
+  }
 
   const cb = exterior().cambio;
   document.querySelectorAll('[data-cambio]').forEach(el=>{

@@ -317,6 +317,14 @@
         <button class="btn ghost" id="precoReset" hidden>Restaurar valores da planilha</button>
       </div>
     </div>
+    <div class="card sem-entrada" id="precoSemEntradaCard" style="margin-bottom:16px;padding:0;overflow:hidden">
+      <div class="card-head"><div><h3>💳 Sem entrada · fidelidade de 12 meses</h3><p class="hint" style="margin:0">Para quem não tem a implantação inteira na hora: não paga nada para começar, paga uma mensalidade maior por 12 meses e depois cai para a mensalidade normal. A implantação é dividida em 12 com 10% a mais, arredondado para terminar em 7. Muda sozinho quando você edita a tabela.</p></div></div>
+      <div style="overflow-x:auto"><table class="preco-tbl">
+        <thead><tr><th>Plano</th><th class="num">Normal</th><th class="num">Mês 1 ao 12</th><th class="num">Depois do 12º mês</th><th class="num">Você ganha a mais</th></tr></thead>
+        <tbody id="precoSemEntrada"></tbody>
+      </table></div>
+      <p class="hint" style="margin:0;padding:10px 16px 14px">No contrato: se o cliente sair antes dos 12 meses, paga o que falta da implantação (proporcional aos meses que faltam).</p>
+    </div>
     <div class="card" style="padding:0;overflow:hidden">
       <div class="card-head"><div><h3 id="precoServicosTit">Serviços</h3><p class="hint" style="margin:0">Clique num valor para editar. Só código = você entrega os arquivos · Completo = publicado, com domínio e configuração.</p></div></div>
       <div style="overflow-x:auto"><table class="preco-tbl">
