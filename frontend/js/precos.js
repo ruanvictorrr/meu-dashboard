@@ -67,8 +67,10 @@ const precosEditaveis = () => {
 const exterior = () => { const X = precos().exterior; return X?.servicos ? {...X, cambio:{...PRECOS_PADRAO.exterior.cambio, ...X.cambio}} : {...PRECOS_PADRAO.exterior, cambio:{...PRECOS_PADRAO.exterior.cambio, ...(X?.cambio||{})}}; };
 const custos = () => precos().custos || PRECOS_PADRAO.custos;
 const piso = (v,desc) => v>0 ? Math.max(0, Math.floor((v*(1-desc)-7)/10)*10+7) : 0;
-// mensalidade do plano sem entrada: implantação ÷ 12 com 10% a mais + mensal, arredondada para cima terminando em 7
-const semEntrada = (imp, men) => Math.ceil((imp*1.1/12 + men - 7)/10)*10 + 7;
+// plano sem entrada (12 meses de fidelidade), arredondado terminando em 7:
+//   tabela = mensal + 15% da implantação por mês (para baixo) · piso = mensal + implantação ÷ 12 com 10% a mais (para cima)
+const semEntrada = (imp, men) => Math.max(0, Math.floor((imp*.15 + men - 7)/10)*10 + 7);
+const semEntradaPiso = (imp, men) => Math.ceil((imp*1.1/12 + men - 7)/10)*10 + 7;
 const servico = id =>precos().servicos.find(s=>s.id===id);
 const avulsoDe = p => p.itens.map(servico).filter(Boolean).reduce((a,s)=>({imp:a.imp+s.completo, men:a.men+s.mensal}),{imp:0,men:0});
 
@@ -217,12 +219,13 @@ function renderPrecos(){
     const planos = [...T.pacotes.filter(p=>p.tier==='Low').map(p=>({nome:`Pacote ${p.nome}`, sub:p.itens.map(id=>sv(id)?.nome||id).join(' + '), imp:p.implantacao, men:p.mensal})),
                     ...T.servicos.filter(s=>s.tier==='Low' && s.completo>0).map(s=>({nome:`${s.nome} Low`, sub:s.desc, imp:s.completo, men:s.mensal}))];
     document.getElementById('precoSemEntrada').innerHTML = planos.map(x=>{
-      const m = semEntrada(x.imp, x.men), ganho = 12*m - (x.imp + 12*x.men);
+      const m = semEntrada(x.imp, x.men), pi = Math.min(m, semEntradaPiso(x.imp, x.men)), normal = x.imp + 12*x.men;
       return `<tr><td><div class="name">${esc(x.nome)}</div><div class="company">${esc(x.sub)}</div></td>
       <td class="num">${$(x.imp)} + ${$(x.men)}/mês</td>
       <td class="num"><b>${$(m)}/mês</b><div class="company">nada de entrada</div></td>
+      <td class="num piso">${$(pi)}/mês</td>
       <td class="num">${$(x.men)}/mês</td>
-      <td class="num pos"><b>${$(ganho)}</b><div class="company">no 1º ano</div></td></tr>`;}).join('');
+      <td class="num pos"><b>${$(12*m - normal)}</b><div class="company">${$(12*pi - normal)} no piso</div></td></tr>`;}).join('');
   }
 
   const cb = exterior().cambio;
