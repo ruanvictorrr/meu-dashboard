@@ -326,12 +326,15 @@ document.getElementById('view-precos').addEventListener('change', e=>{
 });
 // "Custos e margem" abre e fecha clicando no cabeçalho (começa fechado; lembra a escolha neste navegador)
 (()=>{
-  const head = document.getElementById('precoCustosToggle'), corpo = document.getElementById('precoCustosCorpo');
-  const aplicar = aberto => { corpo.hidden = !aberto; head.setAttribute('aria-expanded', aberto); };
-  aplicar(lerPref('precoCustosAberto',['1','0'],'0')==='1');
-  const alternar = ()=>{ const aberto = corpo.hidden; aplicar(aberto); gravarPref('precoCustosAberto', aberto?'1':'0'); };
-  head.onclick = alternar;
-  head.onkeydown = e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); alternar(); } };
+  // cards que abrem e fecham (Serviços, Pacotes, Fidelidade, Custos): lembra a escolha neste navegador
+  document.querySelectorAll('#view-precos [data-recolhe]').forEach(head=>{
+    const corpo = document.getElementById(head.getAttribute('aria-controls')), chave = head.dataset.recolhe;
+    const aplicar = aberto => { corpo.hidden = !aberto; head.setAttribute('aria-expanded', aberto); };
+    aplicar(lerPref(chave,['1','0'],head.dataset.aberto)==='1');
+    const alternar = ()=>{ const aberto = corpo.hidden; aplicar(aberto); gravarPref(chave, aberto?'1':'0'); };
+    head.onclick = alternar;
+    head.onkeydown = e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); alternar(); } };
+  });
 })();
 document.getElementById('precoTiers').onclick = e=>{
   const b = e.target.closest('button'); if(!b) return;
