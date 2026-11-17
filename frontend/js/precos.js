@@ -214,8 +214,9 @@ function renderPrecos(){
     <td class="num pos"><b>${$(eco)}</b>${emReais(eco,T)}</td></tr>`;}).join('');
 
   // sem entrada, fidelidade de 12 meses (só Brasil, planos Low): implantação ÷ 12 com 10% a mais, somada à mensalidade
-  document.getElementById('precoSemEntradaCard').hidden = T.ext;
-  if(!T.ext){
+  const semFid = T.ext || (precoTier && precoTier!=='Low');
+  document.getElementById('precoSemEntradaCard').hidden = semFid;
+  if(!semFid){
     const planos = [...T.pacotes.filter(p=>p.tier==='Low').map(p=>({nome:`Pacote ${p.nome}`, sub:p.itens.map(id=>sv(id)?.nome||id).join(' + '), imp:p.implantacao, men:p.mensal})),
                     ...T.servicos.filter(s=>s.tier==='Low' && s.completo>0).map(s=>({nome:`${s.nome} Low`, sub:s.desc, imp:s.completo, men:s.mensal}))];
     document.getElementById('precoSemEntrada').innerHTML = planos.map(x=>{
