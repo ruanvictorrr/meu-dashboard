@@ -19,6 +19,9 @@ const PRECOS_PADRAO = {
     {id:'dash-low',  nome:'Dashboard', tier:'Low',   desc:'Painel simples com os principais números',            codigo:497,  completo:697,  mensal:77},
     {id:'dash-med',  nome:'Dashboard', tier:'Médio', desc:'Painel web com 1 ou 2 fontes de dados',               codigo:1497, completo:1997, mensal:197},
     {id:'dash-high', nome:'Dashboard', tier:'High',  desc:'Várias fontes, atualização automática e login por usuário', codigo:3997, completo:4997, mensal:397},
+    {id:'sis-low',   nome:'Sistema', tier:'Low',   desc:'1 módulo sob medida (ex.: agenda online com painel ou cadastro de clientes)', codigo:1397, completo:1997, mensal:147},
+    {id:'sis-med',   nome:'Sistema', tier:'Médio', desc:'2 a 4 módulos (agenda, clientes, financeiro), login da equipe',      codigo:3497, completo:4997, mensal:297},
+    {id:'sis-high',  nome:'Sistema', tier:'High',  desc:'Sistema completo sob medida: vários módulos, regras do negócio, nuvem e celular', codigo:6297, completo:8997, mensal:497},
   ],
   pacotes: [
     {id:'pac-presenca',    nome:'Presença',    tier:'Low',   itens:['site-low','bot-low'],                           implantacao:1797,  mensal:197},
@@ -47,6 +50,9 @@ const PRECOS_PADRAO = {
       {id:'dash-low',  nome:'Dashboard', tier:'Low',   desc:'Painel simples com os principais números', usd:{codigo:697,  completo:997,  mensal:97},  eur:{codigo:497,  completo:697,  mensal:77}},
       {id:'dash-med',  nome:'Dashboard', tier:'Médio', desc:'Painel web com 1 ou 2 fontes de dados',    usd:{codigo:1297, completo:1797, mensal:147}, eur:{codigo:897,  completo:1297, mensal:117}},
       {id:'dash-high', nome:'Dashboard', tier:'High',  desc:'Várias fontes, atualização automática e login', usd:{codigo:2097, completo:2997, mensal:247}, eur:{codigo:1497, completo:2197, mensal:177}},
+      {id:'sis-low',   nome:'Sistema', tier:'Low',   desc:'1 módulo sob medida (agenda ou clientes)',      usd:{codigo:847,  completo:1197, mensal:97},  eur:{codigo:597,  completo:897,  mensal:77}},
+      {id:'sis-med',   nome:'Sistema', tier:'Médio', desc:'2 a 4 módulos, login da equipe',                usd:{codigo:2097, completo:2997, mensal:197}, eur:{codigo:1497, completo:2197, mensal:147}},
+      {id:'sis-high',  nome:'Sistema', tier:'High',  desc:'Sistema completo sob medida, nuvem e celular',  usd:{codigo:3847, completo:5497, mensal:297}, eur:{codigo:2797, completo:3997, mensal:227}},
     ],
     pacotes: [
       {id:'pac-presenca',    nome:'Presença',    tier:'Low',   itens:['site-low','bot-low'],                           usd:{implantacao:1297, mensal:97},  eur:{implantacao:897,  mensal:77}},
@@ -55,7 +61,17 @@ const PRECOS_PADRAO = {
     ],
   },
 };
-const precos = () => state.precos || PRECOS_PADRAO;
+// serviços novos da tabela padrão (ex.: Sistema) entram também em quem já editou os preços
+const completarServicos = (lista, padrao) => {
+  if(!Array.isArray(lista)) return;
+  padrao.forEach(s=>{ if(!lista.some(x=>x.id===s.id)) lista.push(JSON.parse(JSON.stringify(s))); });
+};
+const precos = () => {
+  const P = state.precos; if(!P) return PRECOS_PADRAO;
+  completarServicos(P.servicos, PRECOS_PADRAO.servicos);
+  completarServicos(P.exterior?.servicos, PRECOS_PADRAO.exterior.servicos);
+  return P;
+};
 // primeira edição: copia o padrão para os dados (e daí em diante sincroniza com a nuvem)
 const precosEditaveis = () => {
   const P = state.precos || (state.precos = JSON.parse(JSON.stringify(PRECOS_PADRAO)));
@@ -138,7 +154,7 @@ function tabelaAtual(){
 // idioma dos nomes na tabela do exterior (só muda a exibição; os dados continuam em português)
 const IDIOMAS = {
   en: {
-    nomes: {Site:'Website', Chatbot:'Chatbot', 'Automações':'Automations', Dashboard:'Dashboard',
+    nomes: {Site:'Website', Chatbot:'Chatbot', 'Automações':'Automations', Dashboard:'Dashboard', Sistema:'Custom system',
             'Presença':'Presence', Crescimento:'Growth', Completo:'Complete'},
     tiers: {Low:'Basic', 'Médio':'Standard', High:'Premium'},
     desc: {
@@ -147,12 +163,13 @@ const IDIOMAS = {
       'bot-high':'AI connected to calendar and CRM, with multiple agents',
       'auto-low':'1 simple workflow', 'auto-med':'3 to 5 workflows', 'auto-high':'Entire process automated and integrated',
       'dash-low':'Simple dashboard with key numbers', 'dash-med':'Web dashboard with 1 or 2 data sources', 'dash-high':'Multiple sources, auto-refresh and user login',
+      'sis-low':'1 custom module (booking or client records)', 'sis-med':'2 to 4 modules, team login', 'sis-high':'Full custom system, cloud and mobile',
     },
     col: {servico:'Service', pacote:'Package', ticket:'Tier', codigo:'Code only', completo:'Full service', mensal:'Monthly',
           implantacao:'Setup fee', avulso:'Separately', mes:'/mo', desconto:'Discount', piso:'Floor', ano1:'1st year', economia:'1st-year savings'},
   },
   es: {
-    nomes: {Site:'Sitio web', Chatbot:'Chatbot', 'Automações':'Automatizaciones', Dashboard:'Panel de control',
+    nomes: {Site:'Sitio web', Chatbot:'Chatbot', 'Automações':'Automatizaciones', Dashboard:'Panel de control', Sistema:'Sistema a medida',
             'Presença':'Presencia', Crescimento:'Crecimiento', Completo:'Completo'},
     tiers: {Low:'Básico', 'Médio':'Estándar', High:'Premium'},
     desc: {
@@ -161,6 +178,7 @@ const IDIOMAS = {
       'bot-high':'IA conectada a agenda y CRM, con varios agentes',
       'auto-low':'1 flujo simple', 'auto-med':'3 a 5 flujos', 'auto-high':'Proceso completo automatizado e integrado',
       'dash-low':'Panel simple con los números principales', 'dash-med':'Panel web con 1 o 2 fuentes de datos', 'dash-high':'Varias fuentes, actualización automática e inicio de sesión',
+      'sis-low':'1 módulo a medida (reservas o clientes)', 'sis-med':'2 a 4 módulos, acceso del equipo', 'sis-high':'Sistema completo a medida, nube y móvil',
     },
     col: {servico:'Servicio', pacote:'Paquete', ticket:'Nivel', codigo:'Solo código', completo:'Servicio completo', mensal:'Mensual',
           implantacao:'Implementación', avulso:'Por separado', mes:'/mes', desconto:'Descuento', piso:'Mínimo', ano1:'1.er año', economia:'Ahorro 1.er año'},
